@@ -10,8 +10,8 @@ Exact maximum matching in the CONGEST model on planar networks of hop diameter D
 | Reachability from a set of sources, any set (Multi-Source Lemma) | Õ(D) | |
 | Minimum vertex cover, maximum independent set, bipartite | Õ(D²) | |
 
-**Status: proofs written, simulation clean (863,003 runs), combinatorial core in Lean. One AI referee pass, no fatal error; its corrections
-are in the note. No adversarial pass recorded yet, and no human has checked it.** Every line is a claim. What the checks do not cover is in
+**Status: proofs written, simulation clean (863,003 runs), combinatorial core in Lean. One AI referee pass and one adversarial pass; no
+counterexample to a theorem, two mistakes in the wording, all corrections in the note. No human has checked it.** Every line is a claim. What the checks do not cover is in
 Section 9 of `notes/MATCHING.md` and in `sim/REPORT.md`.
 
 - `notes/MATCHING.md`: statements and proofs.

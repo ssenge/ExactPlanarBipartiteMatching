@@ -15,7 +15,7 @@ black boxes of [2].
 | Path has the right ends | 807,500 | 0 |
 | Lemma A: intervals in a bag are disjoint | 1,480,861 | 0 |
 | Lemma C: repeats lie on the separator | 5,360,324 | 0 |
-| Lemma B: visits of a hub at most its number of children (now tightened to at most two, see below) | 30,160,690 | 0 |
+| Lemma B: visits of a hub at most its number of children (the check allowed the number of children; a later run tightened it to at most two, see below) | 30,160,690 | 0 |
 | Requests in a bag at most hubs of the parent + 2 | 10,709,165 | 0 |
 | Matching size equals an independent Hopcroft-Karp | 55,503 | 0 |
 | König cover: size and coverage | 55,503 each | 0 |
@@ -65,6 +65,11 @@ control takes a vertex when first entered, which does give shortcuts.
 - Real cycle separators and real bags of the decomposition.
 - SSSP: distances here are centralized Dijkstra.
 - Sizes above about 225 vertices.
+
+## Two visits
+
+After the referee's correction, the check in `mm.py` allows at most two visits. Short reruns, no failure: path lane 32,253 runs with 664,821 hub checks; matching lane 884
+runs with 284,326 hub checks.
 
 ## Reproduce
 

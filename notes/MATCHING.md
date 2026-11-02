@@ -1,8 +1,9 @@
 # Exact bipartite matching in planar networks
 
 **Status.** Proofs written. Simulation in `sim/REPORT.md`: 863,003 runs, no failure. The combinatorial core is in Lean, see
-Section 8. A referee pass (2 Nov 2026) found no fatal error and no gap in the proofs, given the black boxes; its corrections are in
-this text, and Section 9 lists what it did not check. Importance: solid, if it survives.
+Section 8. A referee pass and an adversarial pass (2 Nov 2026) found no counterexample to a theorem, given the black boxes; the
+adversary found two mistakes in the wording. All corrections are in this text, and Section 9 lists what the passes did not check.
+Importance: solid, if it survives.
 
 The model is CONGEST on a connected planar network with n vertices and hop diameter D. Õ hides
 factors polylogarithmic in n.
@@ -43,7 +44,8 @@ in D alone, on two literature searches, which is not proof that none exists.
 
 ## 2. What is used from the decomposition
 
-All from [2], read from its text. A *BDD* is a tree of bags, each a subgraph of G, of height O(log n).
+All from [2], read from its text. A *BDD* is a tree of bags of height O(log n), whose root is G and in which every child is a subgraph of its parent.
+The proofs below use this when they pass from ⇝ in a child to ⇝ in the parent.
 
 - (B1) Every bag has hop diameter O(D log n), and |sep(Y)| = O(D log n).
 - (B2) Every edge of a bag lies in a child of the bag, and in at most two bags per level.
@@ -55,7 +57,8 @@ All from [2], read from its text. A *BDD* is a tree of bags, each a subgraph of 
   with a ⇝_{Y_j} b. All this takes Õ(D) rounds.
 - (B6) Labels [2, Step 2]. For u with chain G_0,…,G_ℓ, where G_ℓ is the first bag with u in sep(G_ℓ), the
   label L(u) holds In(u,G_i) and Out(u,G_i), the members of sep⁺(G_i) that reach u and that u reaches in
-  G_i, and the child on the chain. It has Õ(D) bits. In a leaf, u knows the leaf. We read In and Out as
+  G_i, and the child on the chain. It has Õ(D) bits. In a leaf, u knows the vertices and arcs of the leaf; the leaf has Õ(D)
+  arcs, so collecting them after every flip costs Õ(D). We read In and Out as
   reflexive: u is in In(u,G) and Out(u,G) when u is in sep⁺(G).
 
 Bags of one level run in parallel by (B2), at a cost of a factor 2. A BFS tree T_Y of each bag costs Õ(D)
@@ -86,7 +89,7 @@ a ⇝_{Y_j} b. By Fact 1 there is a u-v path in J. Take a path of least hops, sa
 
 and turn each arc (y_{i-1},y_i) with label j into a request, called a *segment*, in Y_j. A fixed rule
 breaks ties: least identifiers, first the node order, then the child. Every bag broadcasts the identifiers of
-its children, in Õ(D) rounds, since each child holds a vertex of sep(Y) and so there are at most 3|sep(Y)|. A
+its children, in Õ(D) rounds, since Y is connected, so each child holds a vertex of sep(Y) and there are at most 3|sep(Y)|. A
 leaf answers a request by a BFS path in the leaf, under the same kind of rule.
 
 **Interior nodes are hubs.** Every y_i with 0 < i < k is in sep⁺(Y). So, by induction, a start of a
@@ -141,16 +144,16 @@ through two children and J has a tie. This is why erasure is needed.
 
 ### Doing the erasure
 
-Give an arc of a leaf path its *key*: the sequence of segment indices along the chain of bags from the bag
-in question down to the leaf, followed by the index on the leaf path. Keys in lexicographic order follow
-the walk. A key has O(log² n) bits and every endpoint of the arc knows it with no communication, since it
+Fix a request R of a bag. Give an arc of a leaf path that belongs to W(R) its *key*: the sequence of segment indices along the chain of
+bags from this bag down to the leaf, followed by the index on the leaf path. Keys are compared only within one request: two requests
+of one bag have keys that look alike. Keys in lexicographic order follow the walk. A key has O(log² n) bits and every endpoint of the arc knows it with no communication, since it
 computed the requests. The key of a visit is the key of the arc leaving it. The end v of a request needs no key
 since it never repeats: if v lay on a segment a < k, then (y_{a-1},v) would be a shortcut in J. The same holds for u.
 
 Process levels bottom up. In each bag Y, every x in sep(Y) sends the keys of its retained visits over T_Y,
 and all vertices of Y compute the same erasure. By Lemma B this is at most 2|sep(Y)| keys, that is Õ(D) words
-and Õ(D) rounds. An erased stretch is an interval of keys. Each endpoint of an arc compares the key with the
-intervals. By Lemma C no vertex off sep(Y) needs to report anything.
+and Õ(D) rounds. An erased stretch of R is a half-open interval of keys of R, from the first visit up to the last visit, which
+is kept. Each endpoint of an arc compares the key with the intervals of its own request. By Lemma C no vertex off sep(Y) needs to report anything.
 
 At the root, the retained arcs form π(s,t), and each vertex knows its own arcs. The total is Õ(D) rounds per
 level over O(log n) levels. This proves the Path Lemma. ∎
@@ -235,9 +238,9 @@ All of (D1) to (D3) hold on C ∪ {h}. Integers stay integers.
 
 **Distributed.** (D1) to (D3) give y ≤ max w, also for y(h), so all lengths are at most 2·max w.
 Give every edge of X, in each direction that is not a residual arc, the length L = 1 + n·(largest length), so X is
-strongly connected and d ≥ L means unreachable. Run SSSP on X. Zero lengths, which [2] does not address, go away by
+strongly connected and d ≥ L means unreachable; such a d counts as infinity in δ. Run SSSP on X. Zero lengths, which [2] does not address, go away by
 ℓ′ = (n+1)ℓ+1 and d = ⌊d′/(n+1)⌋; [6] allows them. Elect δ and z by aggregation on the tree of X. The
-update is local. Each edge sees whether it is tight, so the tight arcs form a planar digraph in which any h-z path has
+update is local. Each edge sees whether it is tight under y′, so the tight arcs form a planar digraph in which any h-z path has
 length d(z). Run the Path Lemma on it, over the same subdivided network as in Section 4. Since the path comes from the
 Path Lemma, no parent pointers are used. Per insertion this is SSSP plus Õ(D), with Õ(D) insertions per depth. ∎
 
@@ -271,7 +274,7 @@ Section 4, gives Z in Õ(D) rounds.
 - `LoopErase`: the erasure of a walk is simple, keeps both ends and its arcs, and reports from the set of repeated vertices
   suffice.
 - `Requests`: least hops gives no shortcut, Lemma A, Lemma C.
-- `Decomp`: from (B2), (B3), (B4) alone, Fact 1, Fact 2 and the core of the Multi-Source Lemma (`descent`, `multiSource`), the
+- `Decomp`: from (B2), (B3), (B4) and the inclusion of a child in its parent, Fact 1, Fact 2 and the core of the Multi-Source Lemma (`descent`, `multiSource`), the
   J path (`jpath`), and the claims on X° (`chain_comparable`, `arc_in_chain`, `no_cross`).
 - `Hungarian`: weak duality, the dual update, the flip along a simple alternating path, and their combination `insertion`.
 
@@ -289,7 +292,31 @@ child identifiers; reflexive In and Out; the bound on the subdivided diameter; t
 termination of [3]. Its own scripts (about 112,000 decompositions and 229,000 primal-dual instances, on decompositions that are not planar) found
 no failure.
 
-**Not checked by it:** the text of [3]; proofs of [2, Lemmas 10 to 13], which are not in the DISC text; [2, Lemma 4] and Lemma 9, taken as stated;
+**Adversary (2 Nov 2026).** A second pass, whose only job was to break the theorems, ran on its own code. It found two mistakes in the text, both fixed
+above, and no counterexample on a decomposition with all the properties of Section 2.
+
+- The note did not say that a child lies in its parent and that the root is G. Without this, a 9-vertex instance gives a non-simple path.
+- Keys read literally, with no request attached, erase an arc of another request of the same bag (8 vertices).
+
+It also sharpened several sentences, which are in the text: the half-open interval, tightness under y′, infinity in δ, collecting the leaf after each flip, and
+connectivity behind the count of children. It tested how far least hops can be weakened:
+
+| Condition on the J path | Result |
+|---|---|
+| any simple path | Lemma A fails at n = 3 |
+| no ≥ 2 hops replaced by one arc, no ≥ 3 hops by two | all statements hold in 590,288 runs, at most 2 visits |
+| no shortcut only | Lemma A and Lemma C hold, three visits occur |
+
+Exhaustive runs on one level of the recursion, with no failure: n ≤ 4 with at most 4 children (152,209,216 digraphs, 2,209,975,464 realizations) and n = 5 with at most 3
+children (354,458,466 digraphs). Also exhaustive insertions (for example 25,243,380 tight paths on sides 2 and 4, weights ≤ 2, stopped at 53,093 of 65,536 weight vectors), one small
+exhaustive family of whole trees, and sampled ones. Its negative controls fired, for example no erasure, least hops removed, y(h) = 0, no free term in δ, no max in the
+update, and the Multi-Source Lemma with only the last bag. A larger y(h) did no harm, as expected, since δ ≤ y(h) still holds.
+
+**Its limits.** There was no CONGEST simulation. Real decompositions of [1] were not implemented, only fundamental-cycle substitutes, and residual digraphs on them
+rarely make the erasure fire (11 in about 60,000 runs), which is the weakest coverage. Erasure fired in only 35 full matching runs. n ≥ 6 is sampled only, and the black boxes were read,
+not proved.
+
+**Not checked by the referee:** the text of [3]; proofs of [2, Lemmas 10 to 13], which are not in the DISC text; [2, Lemma 4] and Lemma 9, taken as stated;
 the BDD construction beyond [1]'s Def. 4.1, Lemma 4.3 and Section 4.2; [6]'s theorem and its hypothesis; the separator of [5]; the literature
 searches.
 
