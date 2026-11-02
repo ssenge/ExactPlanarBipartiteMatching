@@ -1,8 +1,8 @@
 # Exact bipartite matching in planar networks
 
 **Status.** Proofs written. Simulation in `sim/REPORT.md`: 863,003 runs, no failure. The combinatorial core is in Lean, see
-Section 8. Not yet refereed by an independent pass. Treat every statement below as a claim until those passes are recorded in
-this file. Importance: solid, if it survives.
+Section 8. A referee pass (2 Nov 2026) found no fatal error and no gap in the proofs, given the black boxes; its corrections are in
+this text, and Section 9 lists what it did not check. Importance: solid, if it survives.
 
 The model is CONGEST on a connected planar network with n vertices and hop diameter D. Õ hides
 factors polylogarithmic in n.
@@ -11,17 +11,18 @@ factors polylogarithmic in n.
 
 **Path Lemma.** Let G be a planar digraph whose underlying graph has hop diameter D, and let s, t be
 vertices with a directed s-t path. In Õ(D) rounds every vertex learns its arcs on one simple directed
-s-t path. Deterministic relative to the decomposition.
+s-t path. Deterministic relative to the decomposition: [2, Lemma 16] is stated as randomized given a BDD, but its Step 1 as written
+uses no randomness, and [5, Sec. 6] names the separator as the only randomized component.
 
 **Matching Theorem.** A maximum matching of a bipartite planar network is computed in Õ(D²) rounds.
-Run in parallel with [3], the bound is min{Õ(D²), O(s\* log s\*)}, where s\* is the size of a maximum
-matching. The algorithm is deterministic relative to the decomposition, and by the derandomization
-stated in [5, Sec. 6] the whole bound would be deterministic.
+The algorithm is deterministic relative to the decomposition, and by the derandomization stated in
+[5, Sec. 6] the whole bound would be deterministic. If the nodes of [3] detect termination, which we did not
+check, running [3] in parallel gives min{Õ(D²), O(s\* log s\*)}, where s\* is the size of a maximum matching.
 
 **Weighted Matching Theorem.** A maximum weight matching of a bipartite planar network with integer
 weights in {0,…,n^{O(1)}}, together with an optimal integer dual, is computed in Õ(D³) rounds with the
-SSSP of [1,2], and in Õ(D²) rounds with the Exact SSSP Theorem of [6], which holds given the Label
-Hypothesis stated there.
+digraph SSSP of [2, Lemma 4], whose proof [2] defers to its full version, and in Õ(D²) rounds with the
+Exact SSSP Theorem of [6], which holds given the Label Hypothesis stated there.
 
 **Multi-Source Lemma.** For any set S of sources in a planar digraph, every vertex learns in Õ(D)
 rounds whether some source reaches it.
@@ -32,10 +33,13 @@ Weighted Matching Theorem.
 
 **Context.** The bound Õ(τ⁴D+τ⁷) of [4, Theorem 4] for treewidth τ, with τ = O(D) on planar graphs,
 implies Õ(D⁷) for the unweighted problem. Exact minimum cost flow takes n^{1/2+o(1)}D rounds on planar
-graphs [7], which covers both problems. So the Matching Theorem improves on [7] for D below about n^{1/2},
-and the unconditional weighted bound does so for D below about n^{1/4}. A path on an even or odd number of
-vertices gives Ω(D). We found no earlier bound for the weighted problem that is polynomial in D alone, on
-two literature searches, which is not proof that none exists.
+graphs [7], for one s-t flow on the communication graph. Matching needs a super-source and a super-sink, and
+these can break planarity: on the cube every face holds 2 of the 4 vertices of one side, so even one apex on
+that side is non-planar. So the planar bound of [7] does not give matching by its statement. If its Laplacian
+solver extends to G with the two apexes, then the Matching Theorem improves on it for D below about n^{1/2},
+and the Õ(D³) weighted bound for D below about n^{1/4}. Two even paths whose left parts differ by one flip the
+status of a middle edge, which gives Ω(D). We found no earlier bound for the weighted problem that is polynomial
+in D alone, on two literature searches, which is not proof that none exists.
 
 ## 2. What is used from the decomposition
 
@@ -51,7 +55,8 @@ All from [2], read from its text. A *BDD* is a tree of bags, each a subgraph of 
   with a ⇝_{Y_j} b. All this takes Õ(D) rounds.
 - (B6) Labels [2, Step 2]. For u with chain G_0,…,G_ℓ, where G_ℓ is the first bag with u in sep(G_ℓ), the
   label L(u) holds In(u,G_i) and Out(u,G_i), the members of sep⁺(G_i) that reach u and that u reaches in
-  G_i, and the child on the chain. It has Õ(D) bits. In a leaf, u knows the leaf.
+  G_i, and the child on the chain. It has Õ(D) bits. In a leaf, u knows the leaf. We read In and Out as
+  reflexive: u is in In(u,G) and Out(u,G) when u is in sep⁺(G).
 
 Bags of one level run in parallel by (B2), at a cost of a factor 2. A BFS tree T_Y of each bag costs Õ(D)
 once.
@@ -80,11 +85,13 @@ a ⇝_{Y_j} b. By Fact 1 there is a u-v path in J. Take a path of least hops, sa
     u = y_0, y_1, …, y_k = v,
 
 and turn each arc (y_{i-1},y_i) with label j into a request, called a *segment*, in Y_j. A fixed rule
-breaks ties: least identifiers, first the node order, then the child. A leaf answers a request by a BFS
-path in the leaf, under the same kind of rule.
+breaks ties: least identifiers, first the node order, then the child. Every bag broadcasts the identifiers of
+its children, in Õ(D) rounds, since each child holds a vertex of sep(Y) and so there are at most 3|sep(Y)|. A
+leaf answers a request by a BFS path in the leaf, under the same kind of rule.
 
 **Interior nodes are hubs.** Every y_i with 0 < i < k is in sep⁺(Y). So, by induction, a start of a
-request that is not in sep⁺ of the parent is s, and an end that is not is t.
+request that is not in sep⁺ of the parent is s, and an end that is not is t. In fact y_i is in sep(Y): two
+consecutive arcs with one label would have a shortcut, so y_i lies on two children.
 
 **No communication.** Broadcast L(s) and L(t) over the BFS tree of the root, Õ(D) rounds. Then every
 vertex w computes the requests of every bag on w, top down, with no further messages. If w is on Y then w
@@ -107,9 +114,13 @@ If they come from one request, as segments a < b, and share x, then y_{a-1} ⇝_
 
 Only one property of the path is used: it has no shortcut in J.
 
-**Lemma B.** A hub of Y has at most three realized visits over all requests of Y, one per child.
+**Lemma B.** A vertex of sep(Y) lies on W(R), defined below, for at most one request R of Y, and has at most
+two visits in it.
 
-This follows from Lemma A and (B3) once the paths are simple, as below.
+The intervals of distinct requests are disjoint by Lemma A, and W(R) lies in the interval of R. Within R, let x
+lie on segments a < b, and suppose b ≥ a+2. Either the two are in one child, against Lemma A, or x is in sep(Y) by
+(B3), and then y_{a-1}, x, y_b is a J path that replaces b-a+1 ≥ 3 hops by two, against least hops. So x lies on
+at most two segments, which are consecutive. Each segment path is simple, so this gives at most two visits.
 
 ### Realization, bottom up
 
@@ -123,7 +134,7 @@ chronological loop erasure: at the first vertex that repeats, jump to its last v
 in its interval. Segments in different children meet only on vertices lying on two children, which are in
 sep(Y) by (B3). ∎
 
-Since π(R) ⊆ W(R) ⊆ Int(R;Y), the paths π of distinct requests in Y are disjoint, which gives Lemma B.
+Since π(R) ⊆ W(R) ⊆ Int(R;Y), the paths π of distinct requests in Y are disjoint.
 
 Consecutive segments can meet at a hub other than their common end. It happens when a directed cycle runs
 through two children and J has a tie. This is why erasure is needed.
@@ -133,10 +144,11 @@ through two children and J has a tie. This is why erasure is needed.
 Give an arc of a leaf path its *key*: the sequence of segment indices along the chain of bags from the bag
 in question down to the leaf, followed by the index on the leaf path. Keys in lexicographic order follow
 the walk. A key has O(log² n) bits and every endpoint of the arc knows it with no communication, since it
-computed the requests. The key of a visit is the key of the arc leaving it.
+computed the requests. The key of a visit is the key of the arc leaving it. The end v of a request needs no key
+since it never repeats: if v lay on a segment a < k, then (y_{a-1},v) would be a shortcut in J. The same holds for u.
 
 Process levels bottom up. In each bag Y, every x in sep(Y) sends the keys of its retained visits over T_Y,
-and all vertices of Y compute the same erasure. By Lemma B this is at most 3|sep(Y)| keys, that is Õ(D) words
+and all vertices of Y compute the same erasure. By Lemma B this is at most 2|sep(Y)| keys, that is Õ(D) words
 and Õ(D) rounds. An erased stretch is an interval of keys. Each endpoint of an arc compares the key with the
 intervals. By Lemma C no vertex off sep(Y) needs to report anything.
 
@@ -156,20 +168,24 @@ bag X let X° = V(X) minus the separators of proper ancestors.
 - X° minus sep(X) is the disjoint union of the C° over the children C of X, with no edge between different
   C°, by the same argument.
 
-Process depths bottom up. A leaf solves G[X°] locally. In an inner bag, the matchings of the children
+The scheme is the sequential one of [9], as secondary sources describe it. Process depths bottom up. A leaf solves G[X°] locally, together with an optimal dual in the weighted case. In an inner bag, the matchings of the children
 together are maximum on G[X° ∖ sep(X)]. Then insert the vertices of sep(X) ∩ X° one at a time, the i-th in
 every bag of the depth during step i.
 
 ### One insertion
 
-Let M be maximum on G[C] with C ⊆ X°, and h a new vertex. By [8, Proposition 1], the maximum size grows by at
-most 1, and if it grows there is an M-augmenting path starting at h. Take the residual digraph on C ∪ {h},
-with arcs leaving the side of h along unmatched edges and returning along matched edges.
+Let M be maximum on G[C] with C ⊆ X°, and h a new vertex. The maximum size grows by at most 1, and if it grows
+there is an M-augmenting path starting at h (compare [4, Proposition 1], from [8]). Indeed, an augmenting path that
+avoids h would lie in G[C], against maximality. So every augmenting path ends at the free vertex h, and M⊕M′, for a
+maximum M′ on G[C ∪ {h}], holds at most one. Take the residual digraph on C ∪ {h}, with arcs leaving the side of h
+along unmatched edges and returning along matched edges.
 
-**Network.** Treat X as its own network, of hop diameter Õ(D) by (B1). To let edges carry messages without
+**Network.** Treat X as its own network, of hop diameter Õ(D) by (B1). All black boxes run with the global n: pad
+X with n−|X| virtual pendant vertices at one vertex, simulated by it, which adds at most 2 to the diameter and
+keeps planarity. To let edges carry messages without
 being arcs, subdivide every edge of X once. An edge in the residual digraph a→b becomes a→w→b, and any other
 edge a−b becomes a→w←b, where w is simulated by an endpoint. The result is a planar digraph with the same
-underlying graph after every flip, whose hop diameter is at most doubled, and w with two in-arcs is a sink, so
+underlying graph after every flip, whose hop diameter is at most 2·diam+2, and w with two in-arcs is a sink, so
 paths never use it. Compute one BDD of this network, an *inner* BDD, once.
 
 **Step.** Run [2, Lemma 16] on the current digraph. Broadcast L(h). Each free vertex t of the other side tests
@@ -184,7 +200,8 @@ the outer bag can be an interior vertex of an augmenting path.
 
 ## 5. The Weighted Matching Theorem
 
-Keep integers y on the current set C with
+Keep integers y on the current set C with the following, where edges, sides and free vertices are those of G[C]
+(and of G[C ∪ {h}] during the insertion of h):
 
 - (D1) y ≥ 0 and y(a)+y(b) ≥ w(ab) for every edge,
 - (D2) y(a)+y(b) = w(ab) on M,
@@ -216,9 +233,10 @@ Flip along a simple shortest path from h to z.
 
 All of (D1) to (D3) hold on C ∪ {h}. Integers stay integers.
 
-**Distributed.** Each insertion adds at most max w to the duals, so y ≤ n·max w, and all lengths are polynomial.
+**Distributed.** (D1) to (D3) give y ≤ max w, also for y(h), so all lengths are at most 2·max w.
 Give every edge of X, in each direction that is not a residual arc, the length L = 1 + n·(largest length), so X is
-strongly connected and d ≥ L means unreachable. Run SSSP on X. Elect δ and z by aggregation on the tree of X. The
+strongly connected and d ≥ L means unreachable. Run SSSP on X. Zero lengths, which [2] does not address, go away by
+ℓ′ = (n+1)ℓ+1 and d = ⌊d′/(n+1)⌋; [6] allows them. Elect δ and z by aggregation on the tree of X. The
 update is local. Each edge sees whether it is tight, so the tight arcs form a planar digraph in which any h-z path has
 length d(z). Run the Path Lemma on it, over the same subdivided network as in Section 4. Since the path comes from the
 Path Lemma, no parent pointers are used. Per insertion this is SSSP plus Õ(D), with Õ(D) insertions per depth. ∎
@@ -233,7 +251,7 @@ ancestors. A vertex a in Y° has Y on its chain, so it knows this set from its l
 gives it to all of Y in Õ(D) rounds per level. A vertex v answers yes if v is a source, or if In(v,Y) ∩ R(Y) ≠ ∅ for some
 Y on its chain.
 
-*Correctness.* A yes is sound. Conversely let P be a path from a source a to v. Descend from the root as long as P avoids
+*Correctness.* A yes is sound, with In and Out reflexive. Conversely let P be a path from a source a to v. Descend from the root as long as P avoids
 the separator. By Fact 1 it stays in one child, so it meets the separator of a bag Y whose proper ancestors it avoided.
 Hence a and v are in Y°, and the vertex met is in Out(a,Y) ∩ In(v,Y). ∎
 
@@ -257,8 +275,23 @@ Section 4, gives Z in Õ(D) rounds.
   J path (`jpath`), and the claims on X° (`chain_comparable`, `arc_in_chain`, `no_cross`).
 - `Hungarian`: weak duality, the dual update, the flip along a simple alternating path, and their combination `insertion`.
 
-Not in Lean: planarity, the facts taken from [2], anything about rounds or knowledge, [8, Proposition 1], that distances satisfy the
-stated inequalities, and the correspondence from a simple path in the residual digraph to the list `L` of `flip`.
+Not in Lean: planarity, the facts taken from [2], anything about rounds or knowledge, the growth by at most 1 in one insertion, that
+distances satisfy the stated inequalities, and the correspondence from a simple path in the residual digraph to the list `L` of `flip`.
+
+## 9. Checks
+
+**Referee (2 Nov 2026).** An independent pass read this note against the texts of [2], [4], [5], [7] and the sources of the BDD. It found no
+fatal error and no gap in the proofs of the Path Lemma, the Matching Theorem, the Weighted Matching Theorem, the Multi-Source Lemma and the
+corollaries, given the black boxes. It went through (B1) to (B6), the knowledge of each vertex, Lemmas A and C, Section 4 and every inequality of
+Section 5, and found these points, all now in the text: the comparison with [7] did not stand as written; the insertion step cited a statement
+printed with a typo; black boxes need the global n; [2, Lemma 4] is what is meant by the digraph SSSP, with its proof deferred; zero lengths;
+child identifiers; reflexive In and Out; the bound on the subdivided diameter; two visits instead of three; the lower bound pair; the
+termination of [3]. Its own scripts (about 112,000 decompositions and 229,000 primal-dual instances, on decompositions that are not planar) found
+no failure.
+
+**Not checked by it:** the text of [3]; proofs of [2, Lemmas 10 to 13], which are not in the DISC text; [2, Lemma 4] and Lemma 9, taken as stated;
+the BDD construction beyond [1]'s Def. 4.1, Lemma 4.3 and Section 4.2; [6]'s theorem and its hypothesis; the separator of [5]; the literature
+searches.
 
 ## References
 
@@ -269,4 +302,5 @@ stated inequalities, and the correspondence from a simple path in the residual d
 5. Y. Abd-Elhaleem, M. Dory, O. Weimann. A Simple Distributed Deterministic Planar Separator. arXiv:2602.22916.
 6. S. Senge. Exact shortest paths and flows on planar graphs. https://github.com/ssenge/ExactShortestPathsAndFlowsOnPlanarGraphs
 7. T. de Vos. Minimum Cost Flow in the CONGEST Model. SIROCCO 2023. arXiv:2304.01600.
-8. Y. Iwata, T. Ogasawara, N. Ohsaka. On the Power of Tree-Depth for Fully Polynomial FPT Algorithms. STACS 2018. Used as stated in [4, Proposition 1].
+8. Y. Iwata, T. Ogasawara, N. Ohsaka. On the Power of Tree-Depth for Fully Polynomial FPT Algorithms. STACS 2018. Credited in [4, Proposition 1].
+9. R. J. Lipton, R. E. Tarjan. Applications of a planar separator theorem. SIAM J. Comput. 9(3), 1980.

@@ -15,7 +15,7 @@ black boxes of [2].
 | Path has the right ends | 807,500 | 0 |
 | Lemma A: intervals in a bag are disjoint | 1,480,861 | 0 |
 | Lemma C: repeats lie on the separator | 5,360,324 | 0 |
-| Lemma B: visits of a hub at most its number of children | 30,160,690 | 0 |
+| Lemma B: visits of a hub at most its number of children (now tightened to at most two, see below) | 30,160,690 | 0 |
 | Requests in a bag at most hubs of the parent + 2 | 10,709,165 | 0 |
 | Matching size equals an independent Hopcroft-Karp | 55,503 | 0 |
 | König cover: size and coverage | 55,503 each | 0 |

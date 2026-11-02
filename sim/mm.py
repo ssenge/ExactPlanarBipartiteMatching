@@ -282,7 +282,7 @@ def path_lemma(root, arcs, s, t, st, minhop=True, erase=True, check_disjoint=Tru
             out.append(loop_erase(walk, Y.sep) if erase else walk)
         for x, c in visits.items():
             st['chk.hub_visits'] += 1
-            if c > sum(x in k.V for k in Y.kids):
+            if c > 2:
                 st['FAIL.hub_visits'] += 1
         return out
 
