@@ -1,8 +1,8 @@
 # Exact bipartite matching in planar networks
 
-**Status.** Proofs written. Checked by simulation only, see `sim/REPORT.md`. Not yet refereed by an
-independent pass and not yet in Lean. Treat every statement below as a claim until those passes are
-recorded in this file. Importance: solid, if it survives.
+**Status.** Proofs written. Simulation in `sim/REPORT.md`: 863,003 runs, no failure. The combinatorial core is in Lean, see
+Section 8. Not yet refereed by an independent pass. Treat every statement below as a claim until those passes are recorded in
+this file. Importance: solid, if it survives.
 
 The model is CONGEST on a connected planar network with n vertices and hop diameter D. Õ hides
 factors polylogarithmic in n.
@@ -245,6 +245,20 @@ Section 4, gives Z in Õ(D) rounds.
 
 - Õ(D) for matching. Batching hubs that lie on a face, by [2, Lemma 2], is the natural attempt. Augmentations interact.
 - Whether the Path Lemma gives anything for planar DFS on digraphs.
+
+## 8. In Lean
+
+`lean/PlanarMatching` has no `sorry`; the axioms are listed in `lean/axioms.txt`. Proved from abstract hypotheses:
+
+- `LoopErase`: the erasure of a walk is simple, keeps both ends and its arcs, and reports from the set of repeated vertices
+  suffice.
+- `Requests`: least hops gives no shortcut, Lemma A, Lemma C.
+- `Decomp`: from (B2), (B3), (B4) alone, Fact 1, Fact 2 and the core of the Multi-Source Lemma (`descent`, `multiSource`), the
+  J path (`jpath`), and the claims on X° (`chain_comparable`, `arc_in_chain`, `no_cross`).
+- `Hungarian`: weak duality, the dual update, the flip along a simple alternating path, and their combination `insertion`.
+
+Not in Lean: planarity, the facts taken from [2], anything about rounds or knowledge, [8, Proposition 1], that distances satisfy the
+stated inequalities, and the correspondence from a simple path in the residual digraph to the list `L` of `flip`.
 
 ## References
 

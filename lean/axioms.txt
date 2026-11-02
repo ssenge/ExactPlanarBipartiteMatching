@@ -1,0 +1,23 @@
+'PlanarMatching.nodup_loopErase' depends on axioms: [propext, Quot.sound]
+'PlanarMatching.head?_loopErase' depends on axioms: [propext, Quot.sound]
+'PlanarMatching.getLast?_loopErase' depends on axioms: [propext, Quot.sound]
+'PlanarMatching.isChain_loopErase' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.eraseAt_eq_loopErase' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.noShortcut_of_least' depends on axioms: [propext, Quot.sound]
+'PlanarMatching.lemmaA' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.lemmaC' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.optimal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.update_ok' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.tight_after' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.exchange' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.flip' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.fill' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.close' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.Decomp.stays' does not depend on any axioms
+'PlanarMatching.Decomp.descent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.Decomp.multiSource' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.Decomp.jpath' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.Decomp.chain_comparable' does not depend on any axioms
+'PlanarMatching.Decomp.arc_in_chain' does not depend on any axioms
+'PlanarMatching.Decomp.no_cross' does not depend on any axioms
+'PlanarMatching.insertion' depends on axioms: [propext, Classical.choice, Quot.sound]

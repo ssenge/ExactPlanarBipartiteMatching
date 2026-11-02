@@ -10,10 +10,12 @@ Exact maximum matching in the CONGEST model on planar networks of hop diameter D
 | Reachability from a set of sources, any set (Multi-Source Lemma) | Õ(D) | |
 | Minimum vertex cover, maximum independent set, bipartite | Õ(D²) | |
 
-**Status: proofs written, simulation only. Not yet refereed, not yet in Lean.** Every line is a claim until a
-referee and an adversarial pass are recorded in `notes/MATCHING.md`.
+**Status: proofs written, simulation clean (863,003 runs), combinatorial core in Lean. Not yet refereed.** Every line is a claim until
+a referee and an adversarial pass are recorded in `notes/MATCHING.md`.
 
 - `notes/MATCHING.md`: statements and proofs.
 - `sim/`: centralized simulation with independent optimum checks and negative controls. It checks the logic of the
   proofs, not round counts. Run `python3 -I sim/run.py <seed> <seconds> [big]`, `python3 -I sim/run.py path <seed> <seconds> [big]`
   and `python3 -I sim/run.py ctl <seed> <seconds>`. With `networkx` installed, every instance is also checked for planarity.
+  Results: `sim/REPORT.md`.
+- `lean/`: the combinatorial core, no `sorry`. `lake build` needs Mathlib at the pinned revision; axioms in `lean/axioms.txt`.
