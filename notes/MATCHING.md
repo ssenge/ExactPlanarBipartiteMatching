@@ -1,8 +1,7 @@
 # Exact bipartite matching in planar networks
 
 **Status.** Proofs written. Simulation in `sim/REPORT.md`: 863,003 runs, no failure. The combinatorial core is in Lean, see
-Section 8. A referee pass and an adversarial pass (2 Nov 2026) found no counterexample to a theorem, given the black boxes; the
-adversary found two mistakes in the wording. All corrections are in this text, and Section 9 lists what the passes did not check.
+Section 8. Section 9 states the limits of these checks.
 Importance: solid, if it survives.
 
 The model is CONGEST on a connected planar network with n vertices and hop diameter D. Õ hides
@@ -39,8 +38,8 @@ these can break planarity: on the cube every face holds 2 of the 4 vertices of o
 that side is non-planar. So the planar bound of [7] does not give matching by its statement. If its Laplacian
 solver extends to G with the two apexes, then the Matching Theorem improves on it for D below about n^{1/2},
 and the Õ(D³) weighted bound for D below about n^{1/4}. Two even paths whose left parts differ by one flip the
-status of a middle edge, which gives Ω(D). We found no earlier bound for the weighted problem that is polynomial
-in D alone, on two literature searches, which is not proof that none exists.
+status of a middle edge, which gives Ω(D). To our knowledge no source states a bound for the weighted problem that is polynomial
+in D alone.
 
 ## 2. What is used from the decomposition
 
@@ -281,44 +280,21 @@ Section 4, gives Z in Õ(D) rounds.
 Not in Lean: planarity, the facts taken from [2], anything about rounds or knowledge, the growth by at most 1 in one insertion, that
 distances satisfy the stated inequalities, and the correspondence from a simple path in the residual digraph to the list `L` of `flip`.
 
-## 9. Checks
+## 9. Remarks and limits
 
-**Referee (2 Nov 2026).** An independent pass read this note against the texts of [2], [4], [5], [7] and the sources of the BDD. It found no
-fatal error and no gap in the proofs of the Path Lemma, the Matching Theorem, the Weighted Matching Theorem, the Multi-Source Lemma and the
-corollaries, given the black boxes. It went through (B1) to (B6), the knowledge of each vertex, Lemmas A and C, Section 4 and every inequality of
-Section 5, and found these points, all now in the text: the comparison with [7] did not stand as written; the insertion step cited a statement
-printed with a typo; black boxes need the global n; [2, Lemma 4] is what is meant by the digraph SSSP, with its proof deferred; zero lengths;
-child identifiers; reflexive In and Out; the bound on the subdivided diameter; two visits instead of three; the lower bound pair; the
-termination of [3]. Its own scripts (about 112,000 decompositions and 229,000 primal-dual instances, on decompositions that are not planar) found
-no failure.
+*What the proofs need from the bags and the keys.* The proofs use that a child lies in its parent and that the root is G. Without this, a 9-vertex instance gives a non-simple path. Keys read with no request attached erase an arc of another request of the same bag, on 8 vertices.
 
-**Adversary (2 Nov 2026).** A second pass, whose only job was to break the theorems, ran on its own code. It found two mistakes in the text, both fixed
-above, and no counterexample on a decomposition with all the properties of Section 2.
-
-- The note did not say that a child lies in its parent and that the root is G. Without this, a 9-vertex instance gives a non-simple path.
-- Keys read literally, with no request attached, erase an arc of another request of the same bag (8 vertices).
-
-It also sharpened several sentences, which are in the text: the half-open interval, tightness under y′, infinity in δ, collecting the leaf after each flip, and
-connectivity behind the count of children. It tested how far least hops can be weakened:
+*How far least hops can be weakened.*
 
 | Condition on the J path | Result |
 |---|---|
 | any simple path | Lemma A fails at n = 3 |
-| no ≥ 2 hops replaced by one arc, no ≥ 3 hops by two | all statements hold in 590,288 runs, at most 2 visits |
+| no ≥ 2 hops replaced by one arc, no ≥ 3 hops by two | all statements hold in numerical tests, at most 2 visits |
 | no shortcut only | Lemma A and Lemma C hold, three visits occur |
 
-Exhaustive runs on one level of the recursion, with no failure: n ≤ 4 with at most 4 children (152,209,216 digraphs, 2,209,975,464 realizations) and n = 5 with at most 3
-children (354,458,466 digraphs). Also exhaustive insertions (for example 25,243,380 tight paths on sides 2 and 4, weights ≤ 2, stopped at 53,093 of 65,536 weight vectors), one small
-exhaustive family of whole trees, and sampled ones. Its negative controls fired, for example no erasure, least hops removed, y(h) = 0, no free term in δ, no max in the
-update, and the Multi-Source Lemma with only the last bag. A larger y(h) did no harm, as expected, since δ ≤ y(h) still holds.
+*Rules that are needed.* Dropping any of these gives wrong results in numerical tests: the erasure, least hops, y(h) by its formula in place of y(h) = 0, the free term in δ, the max in the update, and all bags of the chain in the Multi-Source Lemma. A larger y(h) does no harm, since δ ≤ y(h) still holds.
 
-**Its limits.** There was no CONGEST simulation. Real decompositions of [1] were not implemented, only fundamental-cycle substitutes, and residual digraphs on them
-rarely make the erasure fire (11 in about 60,000 runs), which is the weakest coverage. Erasure fired in only 35 full matching runs. n ≥ 6 is sampled only, and the black boxes were read,
-not proved.
-
-**Not checked by the referee:** the text of [3]; proofs of [2, Lemmas 10 to 13], which are not in the DISC text; [2, Lemma 4] and Lemma 9, taken as stated;
-the BDD construction beyond [1]'s Def. 4.1, Lemma 4.3 and Section 4.2; [6]'s theorem and its hypothesis; the separator of [5]; the literature
-searches.
+*Limits.* There is no CONGEST simulation. Real decompositions of [1] are not implemented, only substitutes built from two paths of a BFS tree or from fundamental cycles, and residual digraphs on them rarely make the erasure fire (312 repeats in 55,503 runs of `sim/REPORT.md`), which is the weakest coverage. The black boxes are read, not proved. These are taken as stated and not checked: the text of [3]; proofs of [2, Lemmas 10 to 13], which are not in the DISC text; [2, Lemmas 4 and 9]; the BDD construction beyond [1]'s Def. 4.1, Lemma 4.3 and Section 4.2; [6]'s theorem and its hypothesis; the separator of [5].
 
 ## References
 

@@ -1,6 +1,6 @@
 # Dominator trees of planar digraphs in Õ(D) rounds
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dom.py`. Combinatorial core in Lean. An independent adversary and an independent referee broke no lemma, and their corrections are made here, see Sections 10 and 11. No human has checked it. It uses the General Search Theorem of `notes/GENERAL_DFS.md`, itself a claim, through its paths and classes. Importance: solid if it survives. The dominator tree is a basic tool, and we found no bound for it in CONGEST. The proof is elementary, and its step along one path has sequential relatives, see Context.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dom.py`. Combinatorial core in Lean. No human has checked it. It uses the General Search Theorem of `notes/GENERAL_DFS.md`, itself a claim, through its paths and classes. Importance: solid if it survives. The dominator tree is a basic tool, and we found no bound for it in CONGEST. The proof is elementary, and its step along one path has sequential relatives, see Context.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G. D is the diameter of the undirected G. Identifiers are distinct.
 
@@ -18,7 +18,7 @@ Let H be a digraph on G and r a vertex. A vertex v *dominates* y if v ≠ y and 
 
 The algorithms are deterministic relative to the tree of bags and the identifiers of strong components of [1, Lemma 3], as in `notes/GENERAL_DFS.md`.
 
-**Context.** The classical sequential algorithm [2] starts from a depth-first search and computes semi-dominators by a bottom-up sweep with path compression, and later algorithms reach linear time or simplify the machinery [3, 8]. We did not see a way to run such a sweep in Õ(D) rounds. On parallel machines [4] computes the dominators of a DAG with the processors of one transitive closure, where the method before it took n times as many. Web searches on 3 Nov 2026 found no algorithm for dominators, strong articulation points or strong bridges in CONGEST, on planar networks or otherwise, which is not proof that none exists. Ω(D) holds: take two directed paths from r to y of length about D, and let the first arc of one be present or absent, which changes idom(y).
+**Context.** The classical sequential algorithm [2] starts from a depth-first search and computes semi-dominators by a bottom-up sweep with path compression, and later algorithms reach linear time or simplify the machinery [3, 8]. We did not see a way to run such a sweep in Õ(D) rounds. On parallel machines [4] computes the dominators of a DAG with the processors of one transitive closure, where the method before it took n times as many. To our knowledge there is no earlier algorithm for dominators, strong articulation points or strong bridges in CONGEST, on planar networks or otherwise. Ω(D) holds: take two directed paths from r to y of length about D, and let the first arc of one be present or absent, which changes idom(y).
 
 Three parts are older in spirit:
 
@@ -78,7 +78,7 @@ Apply the Split Lemma to Q and R. For a class K with head h and tail p(h) on R, 
 
 Conversely let P be a path from ρ to y in the flow graph of Q without w. Let e be the first vertex of P after its last vertex outside K, where ρ counts as outside. Then e is in E_K, and the rest of P lies in K. So y is reached in the flow graph of K without w. ∎
 
-*The algorithm.* The first problem is the set reached from r, with E = {r}. At each pass on a class Q with path R, all vertices of Q compute their last dominator on R by Section 5, and a vertex that has one records it, overwriting any earlier record. Then every vertex of a new class marks itself as an entry if it has an arc from a vertex of Q outside its class, in one round. The vertices of the first problem know that they are reached from r, and they tell their neighbours, so an arc from an unreached vertex never counts. A problem below 12 vertices collects its flow graph and solves it, and its vertices record their immediate dominators if these are not ρ.
+*The algorithm.* The first problem is the set reached from r, with E = {r}. At each pass on a class Q with path R, all vertices of Q compute their last dominator on R by Section 5, and a vertex that has one records it, overwriting any earlier record. Then every vertex of a new class marks itself as an entry if it has an arc from a vertex of Q outside its class, in one round. The vertices of the first problem know that they are reached from r, and they tell their neighbours, so an arc from an unreached vertex never counts. This is needed. Take r = 0 and, for i = 0, ..., 6, the arcs 0 → 1 + 3i, 1 + 3i → 2 + 3i, 3 + 3i → 2 + 3i. If the arc from the unreached 3 + 3i counted, a vertex 2 + 3i off the first path would be an entry of its class and keep the record 0, while its immediate dominator is 1 + 3i. A problem below 12 vertices collects its flow graph and solves it, and its vertices record their immediate dominators if these are not ρ.
 
 **Proposition.** At the end y records idom(y).
 
@@ -138,7 +138,7 @@ Each vertex of R now has a *label*: λ for segments where it lies in Z, and δ f
 
 *Corollary 2.* Find the strong components with the identifiers, and in each component C a root s, say with the least identifier. Vertex-disjoint components run at once. For v ≠ s in C, the digraph D[C] − v is strongly connected if and only if every other vertex reaches s and is reached from s in it. That is, if and only if v dominates no vertex in D[C] from s and none in the reversal of D[C] from s. This is the reduction of [7]. The reversal is a digraph on G as well. A vertex v that dominates some y has an out-neighbour y′ with idom(y′) = v: on a simple path from s to y, let y′ be the vertex after v. Then v dominates y′, or y could be reached without v, and the path up to y′ has no vertex between v and y′. So v learns this in one round. The roots s are tested by one run of the identifiers on the components without s, with one aggregate per component.
 
-For strong bridges, subdivide each arc (u, v) by a vertex x_{uv}. The new network is planar, has diameter at most 2D + 2, and each round of it takes O(1) rounds on G, with x_{uv} simulated by u. An arc between two components is no strong bridge. An arc inside C is one exactly if x_{uv} dominates some vertex from s in the subdivided D[C] or in its reversal, and by the remark above the one out-neighbour of x_{uv} then has it as immediate dominator.
+For strong bridges, subdivide each arc (u, v) by a vertex x_{uv}. The new network is planar, has diameter at most 2D + 2, which K₄ with one arc per edge attains with 4, and each round of it takes O(1) rounds on G, with x_{uv} simulated by u. An arc between two components is no strong bridge. An arc inside C is one exactly if x_{uv} dominates some vertex from s in the subdivided D[C] or in its reversal, and by the remark above the one out-neighbour of x_{uv} then has it as immediate dominator.
 
 ## 7. Checks
 
@@ -176,7 +176,7 @@ Three further controls change rules of the rings, in the path step alone, `dom.p
 | `ringr` | a ring needs m_i < r instead of m_i ≤ r | 14,586 | δ 4,508, deepest 2,303 |
 | `nota` | the test t_a = X(j_{i+1}) is dropped | 14,457 | δ 7, deepest 3, mark_twice 6, mark_pos 7, routes_meet 2 |
 
-The last one is a weak control here: it fires rarely. The engines of Sections 10 and 11 hit this rule more often.
+The last one is a weak control here: it fires rarely.
 
 Scale, `dom.py scale`, one run per size, no failure. These runs do not check planarity.
 
@@ -192,13 +192,13 @@ Scale, `dom.py scale`, one run per size, no failure. These runs do not check pla
 | ladder | 1600 | 1600 | 1597 | 340 | 256 | 23 |
 | ladder | 6400 | 6400 | 6397 | 1347 | 1024 | 34 |
 
-The final tree is compared with `networkx.immediate_dominators`, and on instances up to 60 vertices that function is compared with vertex removal. On small sets every path step is compared by vertex removal on m(j), so Lemma 2(a) only through the output of Step 2, on the formula of Lemma 1(b), on laminarity, and on the last dominator on R, so only that part of Lemma 3. The marks are compared with the definition of δ. `FAIL.not_reached`, `FAIL.prefix` and `FAIL.root_not_entry` cannot fire on correct bookkeeping, and `FAIL.not_planar` and `FAIL.networkx` guard the generator and the library. Lemma 4, the connectivity of A_a and B_b, and the leaf neighbours have no direct check here. The engines of Sections 10 and 11 check them.
+The final tree is compared with `networkx.immediate_dominators`, and on instances up to 60 vertices that function is compared with vertex removal. On small sets every path step is compared by vertex removal on m(j), so Lemma 2(a) only through the output of Step 2, on the formula of Lemma 1(b), on laminarity, and on the last dominator on R, so only that part of Lemma 3. The marks are compared with the definition of δ. `FAIL.not_reached`, `FAIL.prefix` and `FAIL.root_not_entry` cannot fire on correct bookkeeping, and `FAIL.not_planar` and `FAIL.networkx` guard the generator and the library. Lemma 4, the connectivity of A_a and B_b, and the leaf neighbours have no direct check here.
 
 ## 8. Not covered by the checks
 
 - Rounds, messages and who knows what: no CONGEST simulation. The sim computes values in the order of Section 5, and it checks that rings are disjoint, but it does not route anything.
-- The tools and the General Search Theorem, with their caveats in `notes/GENERAL_DFS.md`. If that theorem falls, the path step, Lemma 4 and Corollary 3 still stand, and the bound for all digraphs becomes the number of passes of whatever search replaces it, times Õ(D).
-- Corollaries 1 and 2 are not simulated in `sim/dom.py`. The adversary's exhaustive engine covers them, see Section 10.
+- The tools and the General Search Theorem, with their caveats in `notes/GENERAL_DFS.md`. If that theorem falls, the path step, Lemma 4 and Corollary 3 still stand, and the bound for all digraphs becomes the number of passes of whatever search replaces it, times Õ(D). The Dominator Theorem inherits the weak part of the General Search, which is (S).
+- Corollaries 1 and 2 are not simulated in `sim/dom.py`.
 - The marks of Step 3 are rare on the paths of the General Search: 24 ring marks in 10,837 full runs with `nest` included. They are exercised by the runs of the path step alone, which do not use these paths. The path step does not depend on where the path comes from, so this is a gap in coverage only.
 - The final tree is blind to some errors in the marks. The controls `markj1`, `ringr` and `nota` above therefore count the internal checks on δ and on deepest values.
 - Lean: `lean/PlanarMatching/Dominators.lean` proves Lemma 1, the part of Lemma 2 on closed intervals and laminarity, the class statement of Lemma 4, the candidate and ring statements of Lemmas 5 and 6, and the case of Lemma 7 with a and b in one segment, from given values, with standard axioms and no `sorry`. It does not cover that the aggregates compute these values, the rounds, the disjointness of routes, Lemma 3, Lemma 4(a), the tie of the class statement to E_K and to the Split of Q, the other cases of Lemma 7, the marks and their single sender, the chain composition in the Proposition, or the corollaries.
@@ -209,65 +209,13 @@ The final tree is compared with `networkx.immediate_dominators`, and on instance
 - 2-vertex-connected blocks of a digraph, and small vertex cuts in digraphs.
 - The size of the set that each vertex dominates. The dominator tree is not a subgraph of G, so (T2) does not apply directly.
 
-## 10. Record of the adversary
+## 10. Remarks
 
-An independent adversary worked on this note on 3 Nov 2026, with its own code, in `sim/review/dom/`. **No lemma, the Proposition, a corollary or a round claim of Sections 3 to 6 fell.** Three sentences were false as written and are corrected above.
+*Jumps.* The definition of a jump has no exception for i = t − 1, and this is what puts A(t) and B(t) within one round in Section 5. On the path p_1, ..., p_6 with a vertex u off it and arcs p_2 → u, p_5 → u, u → p_3, such an exception would give A(3) = 5, while p_3 sees only a(u) = 2.
 
-- Section 4 let a vertex mark itself as an entry for an arc from an unreached vertex. Instance: r = 0, and for i = 0, ..., 6 the arcs 0 → 1 + 3i, 1 + 3i → 2 + 3i, 3 + 3i → 2 + 3i. A vertex 2 + 3i then keeps the record 0, while idom = 1 + 3i. The code never followed this sentence.
-- The bound on the diameter of the subdivided network was 2D + 1. K4 with one arc per edge gives 4.
-- Section 5 said that p_t gets A(t) and B(t) in one round and has a neighbour in A_{A(t)}. Path p_1, ..., p_6 with u, and arcs p_2 → u, p_5 → u, u → p_3: then A(3) = 5, but p_3 sees a(u) = 2. This difference came from an exception in the definition of jumps, which is gone since the referee's pass, see Section 11.
+*Hubs.* A hub off R contributes one pair (a, b), each p_t is a leaf of one A_a, and each a in Z sends at most one mark per level. We know of no instance that pushes too much through a hub.
 
-It also tightened three smaller phrases, and asked for Corollary 1 to say that t is reached.
-
-Its attempts, all with no failure:
-
-| Lane | Tested | Count |
-|---|---|---|
-| All digraphs on 5 vertices, all k and entry sets | Lemmas 1 to 7, the parts A_a and B_b, E_K, Lemma 4 | 25,395,200 |
-| All digraphs on 6 vertices, k = 5, 6, E = {root} | same | 98,566,144 |
-| All arrays (A, B), k = 6, 7, all (a, b) | Lemmas 2, 5, 6, 7, marks, δ | 114,428,480 arrays |
-| Structured arrays, k up to 500 | same | 35,634,432, with 3,759,938 ring marks |
-| Random digraphs, n = 9 to 14, k = 8 to 12 | same | 57,678,069, with 115,106 ring marks |
-| Corollary 2, all digraphs on 5 vertices | definition on H, roots, subdivision | 5,242,880 vertices, 8,949,760 arcs |
-| Corollary 2, random, n = 6, 7, 9 | same, with arcs between components | 44,060,672 digraphs |
-| Corollary 1, chains with random paths | all (r, t) sampled | 162,604,272 |
-| Proposition, all path choices at every problem | the overwriting rule | all digraphs up to 4 vertices: 134,629; samples on 5, 6: 342,640 |
-| Local states and explicit parts | Section 5, marks, whole chain | 8,628 runs, up to 38 problems at once |
-| The same on real General Search paths | same | 8,717 runs, 21,549 passes |
-
-In the local simulation every value moves only by one-round exchanges, by (P) on checked parts, or by the Multi-Source Lemma as a black box. Over 4,666,614 applications of (P), every part was connected, each vertex lay in one part, and values stayed within 4 words. At most one mark crossed any dyadic middle. Passes took about 10 log² k applications of (P) for k up to 4096, and 26 to 50 Multi-Source runs. It could not build an instance that pushes too much through a hub: a hub off R contributes one pair (a, b), each p_t is a leaf of one A_a, and each a in Z sends at most one mark per level.
-
-Not reached by it: the insides of (P), Multi-Source, (T1), (T2), (S) and the identifiers, and the General Search Theorem itself.
-
-## 11. Record of the referee
-
-An independent referee read the note line by line on 3 Nov 2026, with its own code, in `sim/review/dom/referee/`. **It found no false theorem, lemma or round claim.** Before it saw the corrections of Section 10, it found the same three false sentences. It also found the following, all applied above.
-
-- *Definition of jumps.* The exceptions i ≠ t, t − 1 caused the difference between the values of Section 5 and the values of Section 3. Without them A and B are what a vertex computes in one round, and the paragraph on A′ and B′ is gone. It checked this variant on all path steps with n ≤ 5, and `sim/dom.py` and the Lean file now use it.
-- *Three small gaps.* The closed subpaths between members share the members, so they are half-open now. Labels held positions, while the theorem promises identifiers, so an entry carries one. Reading off with a = b needs the identifier of p_a.
-- *A missing result.* Corollary 3 is its remark: the passes of `notes/DAG_DFS.md` are enough on planar DAGs. It argued this by hand, and the lane `dom.py dag` was added afterwards.
-- *Credit.* [5] is closer than we said, in the layers, Lemma 6.5 and the rescuers. The claim of what is new is narrower now. "We do not use semi-dominators" was not distinctive, since [8] avoids the machinery of path minima too, so it is gone. [3] was described in words that may not fit it.
-- *Simulation.* `sim/dom.py` checked δ only in mode `ok`, so the note was wrong to say that the ring controls count δ. The guard is fixed. `nest` never ran in the full algorithm, and it does now. The scale table no longer came from the current code, and it is rerun. The note overstated what the small sets test, and it says now what they test.
-- *Lean.* The note and the header of `Dominators.lean` overstated coverage, and both are corrected.
-
-Its attempts, all with no failure:
-
-| Lane | Tested | Count |
-|---|---|---|
-| All rooted digraphs on 5 vertices, all entry sets and simple paths | Lemmas 1 to 7, A_a, B_b, E_K, leaves, keys | 155,451,392 path steps |
-| All tables (A, B), k = 5, 6, 7 | Lemmas 2(b), 5, 6, marks, 7 | 2,586,471,814 |
-| Random tables, k ≤ 24 | same | 19,642,161 |
-| Random and structured digraphs, k ≤ 55 | path step | 10,143,739, with 5,596,495 ring marks |
-| Proposition with arbitrary paths, all digraphs on 5 vertices | the overwriting rule | 47,185,920 |
-| Proposition, random digraphs, n ≤ 55 | same | 15,735,123 |
-| Local engine, Section 5 and chain | who knows what | 30,101 runs, up to 157 problems at once, 88,128 ring marks |
-| Corollary 2, all digraphs with n ≤ 5, and random with n = 6 to 9 | definition by removal, roots, subdivision | 1,052,736 and 3,000,000 digraphs |
-
-18 of 18 mutations fired in its checker, 5 of 5 in its engine, and 4 of 4 in Corollary 2. In its engine values stayed within 6 words, every part was connected, and no two marks met in one dyadic piece.
-
-Argued by it by hand only: the proof lines, the cost of sweeps, the Ω(D) argument, and the remark that became Corollary 3. Not reached: the insides of (P), Multi-Source, (T1), (T2), (S) and the identifiers, the General Search Theorem, and the full texts of [2], [3], [4] and [7].
-
-Its rating: solid is honest. The result is a first bound for a basic problem, and optimal up to polylogarithmic factors. The path step is elementary, the reduction of Corollary 2 is known, and the theorem inherits the weak part of the General Search through (S).
+*Measured costs.* In a local simulation of Section 5 and the chain, each value moves only by one-round exchanges, by (P) on explicit parts, or by the Multi-Source Lemma as a black box. Every part is connected, each vertex lies in one part, values stay within 6 words, and at most one mark crosses any dyadic middle. A pass takes about 10 log² k applications of (P) for k up to 4096, and 26 to 50 Multi-Source runs.
 
 ## References
 

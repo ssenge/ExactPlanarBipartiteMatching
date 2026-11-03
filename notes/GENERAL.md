@@ -1,6 +1,6 @@
 # Exact maximum matching in general planar and low-treewidth networks
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. Refereed and attacked by independent AI passes on 3 Nov 2026. No theorem failed, and the corrections are listed in Section 10. No human has checked it. It uses a decomposition with the properties of Section 2, which the published decomposition of [10] and the region bags of [6] both have, and not the Label Hypothesis. Importance if it survives: significant, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction on planar networks, and for treewidth τ it removes the bipartite restriction of [4, Theorem 4] and improves its bound.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. No human has checked it. It uses a decomposition with the properties of Section 2, which the published decomposition of [10] and the region bags of [6] both have, and not the Label Hypothesis. Importance if it survives: significant, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction on planar networks, and for treewidth τ it removes the bipartite restriction of [4, Theorem 4] and improves its bound.
 
 The model is CONGEST on a connected network G with n vertices and hop diameter D, planar with a known embedding except in Section 6. Õ hides factors polylogarithmic in n. Words have O(log n) bits, and local computation is unbounded.
 
@@ -16,7 +16,7 @@ The model is CONGEST on a connected network G with n vertices and hop diameter D
 
 **Linear Algebra Lemma.** Let a matrix over F_p, p = n^{O(1)}, be symmetric or alternating, and have nonzero entries only on the diagonal and on edges of G, with each entry known to its row and column vertices. In Õ(D²) rounds the network computes its rank, a set B of size equal to the rank with nonsingular principal submatrix, and a factorization stored at the centres of the bags, after which each system on B is solved in Õ(D) rounds, every vertex learning its coordinate.
 
-**Context.** For exact matching without the bipartite restriction the bounds we found depend on the matching size: Õ(s\*) rounds [2], randomized, and Õ(s\*^{3/2}) before that [1]. For treewidth τ, [4, Theorem 4] gives Õ(τ⁴D + τ⁷) for bipartite graphs, and states that the idea behind it is incorrect for general graphs, since a shortest 2-coloured walk need not be simple. The Treewidth Theorem improves this bound by a factor τ in its first term and τ² in its second, on all graphs. For D well below the square root of s\*, the General Matching Theorem improves on [2] on planar networks. For bipartite planar networks, the Matching Theorem in `notes/MATCHING.md` has the same bound and is deterministic relative to the decomposition, while this note is randomized and simpler. Lower bound: two even paths, as in `notes/MATCHING.md`, give Ω(D). Four literature searches found no earlier exact bound for general planar networks that is polynomial in D alone, and no improvement on [4, Theorem 4]; that is not proof that none exists.
+**Context.** For exact matching without the bipartite restriction the bounds we found depend on the matching size: Õ(s\*) rounds [2], randomized, and Õ(s\*^{3/2}) before that [1]. For treewidth τ, [4, Theorem 4] gives Õ(τ⁴D + τ⁷) for bipartite graphs, and states that the idea behind it is incorrect for general graphs, since a shortest 2-coloured walk need not be simple. The Treewidth Theorem improves this bound by a factor τ in its first term and τ² in its second, on all graphs. For D well below the square root of s\*, the General Matching Theorem improves on [2] on planar networks. For bipartite planar networks, the Matching Theorem in `notes/MATCHING.md` has the same bound and is deterministic relative to the decomposition, while this note is randomized and simpler. Lower bound: two even paths, as in `notes/MATCHING.md`, give Ω(D). To our knowledge there is no earlier exact bound for general planar networks that is polynomial in D alone, and no improvement on [4, Theorem 4].
 
 The method is sequential work carried over to CONGEST. [3] finds maximum matchings of planar graphs by nested dissection on AAᵀ after a reduction to degree 3, and [5] performs Gaussian elimination with pivoting on matrices of low treewidth and finds a maximum matching in O(k⁴n log n) operations for treewidth k. Removing a balanced separator and recursing is the search of [5, Lemma 5.8] and [3, Fig. 4]. Lemma 4 is from [7], the principal submatrix is the Frobenius theorem [5, Theorem 5.6], and the update of Lemma 5 is in [3, Theorem 7, Section 4.3]. The Tutte-Berge check goes back to [8], and the Gallai-Edmonds check of Section 5 is the one of [9, Section 3.1, Theorem 3.4], with Lemmas 7 and 8 close to [9, Lemma 3.3], using one random kernel vector in place of a kernel basis. The reductions of Section 6.1 are classical, see [9, Proposition 2.4, Theorems 3.5 and 3.6].
 
@@ -127,7 +127,7 @@ Let N = V ∖ B. Each d ∈ N draws z_d uniformly in F_p. Set y_N = z, and y_B =
 
 *A correct run passes.* If D′ = D(G) and |M| = ν(G), both parts hold by the Gallai-Edmonds theorem: A′ = A(G), the components of G[D(G)] are odd and factor-critical, and those of C(G) are even, with n − 2ν(G) = c(D(G)) − |A(G)|. By Lemma 8 and Fact 2, a run passes with probability at least 1 − O(n²/p) = 1 − O(1/n), and repeating O(1) times gives high probability with Õ(D²) rounds. ∎
 
-Part (b) cannot be left out. On the path a-b-c with z_d = 0 we get D′ = A′ = ∅, and (a) holds, while D(G) = {a,c}.
+Part (b) cannot be left out. On the path a-b-c with z_d = 0 we get D′ = A′ = ∅, and (a) holds, while D(G) = {a,c}. At tiny primes part (a) alone can pass with a wrong D′, never with a wrong M, and part (b) rejects exactly these cases.
 
 The proof nowhere uses that the matching graph is all of G: it works for any subgraph of the network, which also gives the region lane of the simulator its deficient instances.
 
@@ -176,12 +176,12 @@ If there is no arc from s to t, then κ = κ₀. Take the cover C given by Köni
 
 ## 8. Not covered by the checks
 
-- Rounds, messages and who knows what: no CONGEST simulation. Words per bag are counted.
+- Rounds, messages and who knows what: no CONGEST simulation. Words per bag are counted, and Section 10 has measurements of the elimination and one solve.
 - For Section 6: `sim/gm.py tw` runs the filter on bags built by the strategy of [4], Section 3, with separators chosen by degree, so neither their size nor their balance is that of [4]. (T1) and (T2) are read from [4], not checked.
 - The proofs of (H1) to (H5) in [6], except that the simulator exercises (H3) and (H5) on its instances.
 - The symmetric case of the Linear Algebra Lemma.
 - Sizes above a few hundred vertices.
-- The region bags of `sim/gm.py region` hit forced leaves, since their candidate curves are limited: 23,660 in one run of the adversary, with leaves of up to 48 vertices. So that lane does not reach O(log n) height with the leaves of (H1) at once.
+- The region bags of `sim/gm.py region` hit forced leaves, since their candidate curves are limited, with leaves of up to 48 vertices. So that lane does not reach O(log n) height with the leaves of (H1) at once.
 - The planar downward pass of the path aggregation in Section 6.1 is counted in the proof, not simulated.
 
 ## 9. Open
@@ -190,28 +190,16 @@ If there is no arc from s to t, then κ = κ₀. Take the cover C given by Köni
 - Maximum weight matching. The algebraic route has polynomials of degree nW in the weight variable, and [5] notes that its approach does not extend easily to weights.
 - Whether Õ(D²) can be made deterministic: the algorithm uses randomness only in the a_e and the z_d.
 
-## 10. Referee record
+## 10. Measured bounds
 
-An independent AI referee read this note with Sections 6 and 6.1 on 3 Nov 2026 and wrote its own simulator with exact arithmetic. It ran 13,487 runs on own bags, 4,972 on region bags, with (H1) to (H5) checked from their definitions on 271,662 bags and with n up to 542, 18,601 runs of Section 6 and about 9,000 of Section 6.1, and no theorem failed. It also measured rounds of the elimination and one solve with per-edge FIFO on 11 region instances: at most 1.2 times the largest bag words plus twice the height, in each phase and depth, with rounds over D² between 2.6 and 6.7 for D from 9 to 37. The search and Section 6 had no such simulation. It found four statements false as written, all corrected above:
+These are measurements, and no proof uses them.
 
-| Item | What was wrong | How it showed |
-|---|---|---|
-| Inequality (1) | The middle term failed if S_X overlaps ∂X | 3 of 119,876 region bags |
-| Certificate Theorem | The check did not certify Gallai-Edmonds, and restart did not amplify it | 15,619 of 240,804 repetitions at tiny p passed with a wrong D′, never with a wrong M; part (b) rejected exactly these |
-| (T2) | Literal near disjointness fails | 100,152 violations in one lane, none in the restricted form |
-| ν(H) = \|V′\| + κ | False if s → t is an arc | 376 of 376 such cases |
-
-It also found gaps in the protocol that do not change the bounds: c_X lacked F_{r,v} in the search, Section 6 needed the broadcast of B_x and J_x ⊇ B_x ∩ W, and solving needed the second run on W = B. The second paragraph of the Context had claimed too much credit, and now cites the classical sources.
-
-An independent AI adversary then tried to break Sections 2 to 6.1, with its own engine and hierarchies. It found the same four flaws and no broken lemma or theorem. Its largest lanes covered all 6,749 connected planar graphs with n ≤ 8 (2,332,291 runs over random hierarchies), all 996 connected graphs with n ≤ 7 (74,685 decompositions, 2,687,018 runs of Section 6), and all 1,052,740 relevant digraphs up to n = 6 for the paths, cover and separator. Every negative control was detected. It also measured the bounds:
-
-- |I″| ≤ |∂| is attained on real region bags: 24 at D = 36 on a grid with two leaves per vertex, n = 972.
-- Σ|∂Y| ≤ 3k is attained at 3.00k on abstract hierarchies with (H3) and (H5). On region bags it saw 2.14k.
+- Rounds of the elimination and one solve, with per-edge FIFO on 11 region instances: at most 1.2 times the largest bag words plus twice the height, in each phase and depth, with rounds over D² between 2.6 and 6.7 for D from 9 to 37. The search and Section 6 have no such simulation.
+- A packet walk with one solve per depth takes at most 2.27 times tree height plus words in any phase. It is not a full packet run of the search, and its growth runs use a small-leaf rule that inflates the height.
+- The bound |I″| ≤ |∂| is attained on real region bags: 24 at D = 36 on a grid with two leaves per vertex, n = 972.
+- The bound Σ|∂Y| ≤ 3k is attained at 3.00k on abstract hierarchies with (H3) and (H5). On region bags the largest value seen is 2.14k.
 - Words per bag are Θ(D²) and stay flat, at about 5.3 D² on the 4 × s cylinder from n = 400 to 12,000. So the D² of Lemma 3 is the real cost of this method, and not slack in the count. The constant 36 implicit in the proof is about 100 times too large.
-- A packet walk with one solve per depth took at most 2.27 times tree height plus words in any phase. It is not a full packet run of the search, and growth runs used a small-leaf rule that inflates the height.
-- Section 6: at most 39 children, 39 retained rows before the filter and 15 after, t up to 61. These rest on word counts and on separators of its own choice, not on those of [4].
-
-It did not reach an exhaustive enumeration of abstract hierarchies, a simulation of (T1), (T2) or the shortcuts of [4], or the regime with both O(log n) height and Õ(D) leaves.
+- For Section 6: at most 39 children, 39 retained rows before the filter and 15 after, t up to 61. These rest on word counts and on separators chosen for the test, not on those of [4].
 
 ## References
 

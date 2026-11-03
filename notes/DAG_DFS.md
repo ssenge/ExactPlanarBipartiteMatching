@@ -1,6 +1,6 @@
 # Depth-first search and topological order of planar DAGs
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulations in `sim/dagdfs.py` and `sim/sec5.py`. Attacked and refereed by independent AI passes on 3 Nov 2026. Neither broke a theorem. Both found the same two faults in the proof of Section 5, repaired below, and the records are in Sections 9 and 10. No human has checked it. Importance: solid if it survives for the DAG Search Theorem, since the bound is optimal up to polylogarithmic factors for a basic problem, and we found no earlier bound polynomial in D for it. Modest for the Topological Order Theorem, where earlier work suggests randomized ranks, see Context.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulations in `sim/dagdfs.py` and `sim/sec5.py`. No human has checked it. Importance: solid if it survives for the DAG Search Theorem, since the bound is optimal up to polylogarithmic factors for a basic problem, and we found no earlier bound polynomial in D for it. Modest for the Topological Order Theorem, where earlier work suggests randomized ranks, see Context.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G, an edge may carry no arc, one arc, or one arc in each direction. In round bounds D is the diameter of the undirected G, and in D[K] it is the digraph of Sections 3 and 4. Identifiers are distinct. This note builds on `notes/DIRECTED.md`.
 
@@ -14,13 +14,13 @@ The model is CONGEST on a connected planar network G with n vertices and hop dia
 
 All three are deterministic relative to the tree of bags, as in `notes/DIRECTED.md`. On digraphs with cycles this also rests on the identifiers of [1, Lemma 3], stated as randomized and only outlined, or on the rule `selfcomp` in Section 9 of `notes/DIRECTED.md`. On DAGs it does not.
 
-**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. For digraphs, [1] gives reachability and identifiers of strong components in Õ(D), and [5] states that these are the only known nontrivial problems on planar digraphs with an Õ(D) bound, to the best of its authors' knowledge, before it adds approximate shortest paths. Literature searches, five in all, found no depth-first search for planar digraphs or DAGs in CONGEST with a bound polynomial in D, which is not proof that none exists.
+**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. For digraphs, [1] gives reachability and identifiers of strong components in Õ(D), and [5] states that these are the only known nontrivial problems on planar digraphs with an Õ(D) bound, to the best of its authors' knowledge, before it adds approximate shortest paths. To our knowledge no earlier depth-first search for planar digraphs or DAGs in CONGEST has a bound polynomial in D.
 
 For the order, [8, Corollary 33, Remark 34], adapting [9], computes with high probability polynomially bounded ranks that are equal exactly on strong components and monotone on the arcs between them, with Õ(1) Minor-Aggregation rounds and Õ(1) calls to a reachability oracle. With the Multi-Source Lemma as the oracle this suggests randomized ranks in Õ(D) on planar digraphs, with the caveat of `notes/DIRECTED.md`. We did not prove this. What stays new here is the exact range 1..c, which is no immediate corollary, since sorting polynomial labels across a bridge costs far more than Õ(D), and determinism.
 
 Ω(D) holds for depth-first search, since a directed path with one arc reversed at the far end changes the numbers at the other end. That argument fails for topological numbers, since the first vertices of the path can keep their numbers. For them take the chain a_m → ... → a_1 → v_0 → b_1 → ... → b_m and a vertex f adjacent to a_m and b_m. With both arcs into f the chain followed by f is a Hamiltonian path, which forces m + 1 at v_0. With both arcs out of f, f followed by the chain is one, which forces m + 2. The diameter is m + 1, and f is at distance m + 1 from v_0.
 
-The classes of Section 3 are the dangling subgraphs of [11, Definition 7, Lemma 8]. On DAGs they refine the sets R′(v_i) of [6, Section 7]. With cycles they do not quite: on 0→1, 0→3, 1→2, 2→0 with π = (0,1), R′(v_1) holds 3, while Lemma 1 gives the head 3 the tail v_0. [6, Lemma 2], whose proof it takes from [10, Theorem 11], reduces the lexicographically least depth-first search of a DAG to reachability in logspace. That reduction asks many adaptive queries, and we did not see a form of it in Õ(D) rounds. This note gives some real search, not the lexicographic one. The new parts are that one class per head gives vertex-disjoint connected problems with real roots, so a separator of [2] applies with no virtual root, that a whole path can be added to a DAG in one pass, and the CONGEST bounds. The bounds are the main novelty, and the combinatorics is modest, since the deep-first order is already in [6].
+The classes of Section 3 are the dangling subgraphs of [11, Definition 7, Lemma 8]. On DAGs they refine the sets R′(v_i) of [6, Section 7]. With cycles they do not quite: on 0→1, 0→3, 1→2, 2→0 with π = (0,1), R′(v_1) holds 3, while Lemma 1 gives the head 3 the tail v_0. [6, Lemma 2], whose proof it takes from [10, Theorem 11], reduces the lexicographically least depth-first search of a DAG to reachability in logspace. That reduction asks many adaptive queries, and we did not see a form of it in Õ(D) rounds. This note gives some real search, not the lexicographic one. The new parts are that one class per head gives vertex-disjoint connected problems with real roots, so a separator of [2] applies with no virtual root, that a whole path can be added to a DAG in one pass, and the CONGEST bounds. The bounds are the main novelty, and the combinatorics is modest, since the deep-first order is already in [6]. We did not trace that order further back: [6] cites [7] only in its introduction, and we did not check the text of [7].
 
 ## 2. Tools
 
@@ -171,11 +171,11 @@ Negative controls, `sim/sec5.py ctl 9023 60`:
 ## 7. Not covered by the checks
 
 - Rounds, messages and who knows what: no CONGEST simulation. Reachability is computed directly.
-- The separator of the lanes is a fundamental cycle of a triangulation found by a central computation, not the protocol of [2]. (S), (P), (T1) and (T2) are read from [1] and [2] and from the earlier notes.
-- In `sim/dagdfs.py` the condensation runs as a DAG on the contracted graph, so it cannot see the two faults of Section 5. `sim/sec5.py` runs the form of Section 5 and its numbers, with reachability computed directly.
+- The separator of the lanes is a fundamental cycle of a triangulation found by a central computation, not the protocol of [2]. (S), (P), (T1) and (T2) are read from [1] and [2] and from the earlier notes. Appendix B of [3] and the proof of [1, Lemma 3] are not checked.
+- In `sim/dagdfs.py` the condensation runs as a DAG on the contracted graph, so it does not test the numbers or the pieces of Section 5. `sim/sec5.py` runs the form of Section 5 and its numbers, with reachability computed directly.
 - The separator of the lanes takes the best fundamental cycle of a triangulation. It reaches the 75% allowed.
 - Some counters of `sim/dagdfs.py` cannot detect a fault of the algorithm: `class_not_reached` and `block_not_reached`, since the group is defined as a reach, `block_no_progress`, `split_not_cover`, and `block_not_contiguous`, which holds for greedy classes under any key order. `topological` runs only after the replay passed, so it is then a theorem. No control exists for `bits`, `unbalanced`, `not_planar` or contiguity. About 12% of its runs have cycles.
-- [2] asks in Theorem 3 for vertex-disjoint connected subgraphs, but its multi-part proof is at sketch level, and we read it as stated. The referee reads the graph Ĝ of [3], which [2] uses, as non-planar when written literally for C the rim of a wheel, and planar when the edge is attached to the copy in its corner. We did not check this.
+- [2] asks in Theorem 3 for vertex-disjoint connected subgraphs, but its multi-part proof is at sketch level, and we read it as stated. The weakest spot is parallel biconnectivity, since [2] does not spell out augmentation across many parts at once. The graph Ĝ of [3], which [2] uses, can be read as non-planar when written literally for C the rim of a wheel, and as planar when the edge is attached to the copy in its corner. We did not check this.
 - `lean/PlanarMatching/DagSearch.lean` proves Lemmas 1 and 2 in full and Fact 1, with no `sorry` and the three standard axioms, listed in `lean/axioms.txt`. Fact 1 is proved for a search defined as an inductive relation, with the numbers it assigns, and "right of" is shown to agree with these numbers. Every finite problem has a search tree, by recursion on classes (`exists_searchTree`), so the definition is not vacuous. Not in Lean: the separator (S), Lemmas 3 and 4, the forest with a virtual vertex, the count of rounds, Section 5 and all round bounds.
 
 ## 8. Open
@@ -183,53 +183,19 @@ Negative controls, `sim/sec5.py ctl 9023 60`:
 - `notes/GENERAL_DFS.md` claims Õ(D) for depth-first search of all planar digraphs. What follows is the state before it. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. A separator that bounds strong components only is enough: [11, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [11] and [6] find these on planar digraphs in parallel. `notes/GENERAL_DFS.md` finds them in Õ(D): two root paths of a spanning out-tree come from the separator, and a binary search on them picks the component.
 - Dominators of a planar DAG: Corollary 3 of `notes/DOMINATORS.md` claims Õ(D) on the passes of this note.
 
-## 9. Record of the adversary
+## 9. Instances for Section 5
 
-An independent AI adversary tried to break the note on 3 Nov 2026, with its own engine. It did not break the DAG Search Theorem or the Small Components Theorem. It found one failure and one gap, both in the proof of Section 5, and both are repaired above.
+*Numbers under identifier order.* Let B(m) have a bidirected path c_0, ..., c_{2m−1} as one component, pendant arcs c_i → w_i, and a binary tree over the c_i on edges with no arcs, so D = O(log m), with 2 edges between the left and right halves. With identifier order, the numbers of the right pendants reveal the histogram of the left identifiers, which has binom(2m,m) values. This gives Ω(m/log n) rounds against D = O(log m), for this output and not for the theorem. The instance B(2) has 6 of 6 histograms, B(3) is the smallest with |K| ≥ 12, with 10 of 20, and B(4) has 70 of 70. Gathering the siblings over (P) on B(64) needs 5,859 bits against a limit of 72. With the key of Section 5, B(m) for m = 4 to 512 takes 2 levels and at most 106 runs of the Multi-Source Lemma.
 
-- **Numbers.** The note said that the numbers come from (T2) with a node simulated by (P). A sibling offset then needs the total size of earlier siblings, which is a sorted prefix sum across a long part when the parent is a component. Its instance B(m) has a bidirected path c_0, ..., c_{2m−1} as one component, pendant arcs c_i → w_i, and a binary tree over the c_i on edges with no arcs, so D = O(log m), with 2 edges between the left and right halves. With identifier order, the numbers of the right pendants reveal the histogram of the left identifiers, which has binom(2m,m) values. This gives Ω(m/log n) rounds against D = O(log m), for this output and not for the theorem. B(2) has 6 of 6 histograms, B(3) is the smallest with |K| ≥ 12, with 10 of 20, and B(4) has 70 of 70. Its repair is the key of Section 5: on B(m) for m = 4 to 512 it took 2 levels, no failures, and at most 106 runs of the Multi-Source Lemma.
-- **Pieces.** The note said that π and τ turn into paths of components. The smallest instance has 5 vertices and arcs (0,1), (1,2), (2,1), (0,3), (3,2), (2,4), with π = (0,1) and τ = (3,2,4): the pieces are [3] and [4], and none exists on n ≤ 4. Its missing lemma is Lemma 5. On 5 vertices it saw 3,017 pairs with a re-entry and no class with two pieces, in hill climbing 6,296,782 pairs and 880 re-entries with none, and the ladder has m − 1 pieces.
+*The same at constant diameter.* Take hubs A⇄B, leaves a_j⇄A and b_j⇄B, and pendant sinks p_j from a_j and q_j from b_j, for j = 1, ..., t, with id(p_j) = 4j and id(q_j) = 4j ± 1 by a bit x_j. The diameter is 5 and n = 4t + 2. The number of p_j reveals x_j across the single edge A−B, so that order needs Ω(t/log n) rounds.
 
-Flaws in wording, corrected above: the Ω(D) argument for numbers, the next vertex of β needs one exchange, and the dependence on [1, Lemma 3] for determinism.
+*Pieces.* The smallest instance with more than one piece has 5 vertices and arcs (0,1), (1,2), (2,1), (0,3), (3,2), (2,4), with π = (0,1) and τ = (3,2,4). The pieces are [3] and [4], and no such instance exists on n ≤ 4. The ladder of `sim/sec5.py` has strong components {p_j, q_j} for j = 0, ..., m − 1, and arcs p_j → p_{j+1} and q_j → w_j → q_{j+1}. With π through the p_j and τ through the q_j and w_j it has the m − 1 pieces [w_j], and each class holds one.
 
-| Lane | Counts, no failure |
-|---|---|
-| Lemmas 1 and 2, all digraphs with n ≤ 5 | 1,048,576 digraphs, 48,578,560 paths π, 202,040,320 paths τ |
-| Lemmas 1 and 2, all labelled DAGs with n = 6 | 3,781,503 DAGs, 185,567,970 paths τ |
-| Lemmas 1 and 2, random n = 6 and 7 | 218,450,270 and 579,263,764 paths τ |
-| Full algorithm, threshold 2 | DAGs with n = 6 complete, 9,251 instances, and 217,610 with n = 7 until a timeout |
-| Section 5 exact, n = 5 | 842,485 of 1,048,576 digraphs, 243,004,740 pairs, 5,411,318 replays |
-| Who knows what, vertex form | 13,925 runs, n ≤ 349, 919,637 numbers |
-| Who knows what, component form with the repair | 18,145 runs, 1,188,515 numbers against a replay |
-| Separator: Algorithm 1 of [2] run centrally | 86,981 runs, 137,718 balance checks, largest component exactly 75% |
-| (T2) from (P) alone | 72 trees, n ≤ 16,384, at most 146 aggregations |
+## 10. Remarks
 
-Levels never exceeded log_{4/3}|K|. The worst cases were 6 at |K| = 96 with threshold 12, and 13 at n ≤ 345 with threshold 2. Rounds of step 5 reached s for s = 1 to 7 and never exceeded it, and on DAGs there was always 1. Words stayed at most 7.5 log₂ n. All its controls fired, among them `shallow`, `revhead`, `onepath` and `lastentry`, and gathering the siblings over (P) on B(64), which needed 5,859 bits against a limit of 72.
-
-It did not reach a message-level simulation: (P), (T1), (T2), the Out-Forest Theorem, the Multi-Source Lemma and (S) are black boxes with word limits and checks of parts. It rates parallel biconnectivity in [2] as the weakest spot, since [2] does not spell out augmentation across many parts at once. It also did not reach Appendix B of [3] or the proof of [1, Lemma 3], and the repairs are simulated and argued, with no Lean.
-
-## 10. Record of the referee
-
-An independent AI referee read the note line by line on 3 Nov 2026, took (T1), (T2), the Out-Forest Theorem and the Multi-Source Lemma as given, and ran its own code. It found no error in Fact 1, Lemmas 1 to 4, the DAG Search Theorem, the Small Components Theorem or the order on DAGs. In Section 5 the conclusion survives and it found the same two faults as the adversary, with no contact between the two passes.
-
-- Its instance for the numbers has hubs A⇄B, leaves a_j⇄A and b_j⇄B, and pendant sinks p_j from a_j and q_j from b_j, with id(p_j) = 4j and id(q_j) = 4j ± 1 by a bit x_j. It has diameter 5 and n = 4t + 2. The number of p_j reveals x_j across the single edge A−B, so that order needs Ω(t/log n) rounds. With the key of Section 5 the formula matched in 228,130 checks, and with the id order the same check fired in 1,225 to 3,554 of 5,246 runs.
-- For the pieces: all n = 5 digraphs, 745,472 digraphs, 43,248,560 pairs, 768 of them interrupted, about 227M pairs on random n = 6 to 13, and a forced ladder with m runs for m = 2 to 13, each class holding one.
-
-Other points, corrected above: the Ω(D) argument for numbers, with the replacement in the Context; `out_tree` gave first-visit trees only, so the sentence in Section 6 was false; credit to [8] and [9]; (S) on non-induced parts; the heads of Lemma 4; positions on π′; the root of a problem in Section 5; [6, Lemma 2] and "one class per head"; and τ as two things. "Goes back to [7]" was unverified, since [6] cites [7] only in its introduction, so we dropped it.
-
-| Lane | Counts, no failure |
-|---|---|
-| Fact 1, all n ≤ 4 | 2,432 digraphs, 15,360 ordered trees, 6,528 search trees, which are exactly all outcomes of a search |
-| Lemmas 1 and 2, all digraphs n = 5 | 745,472 digraphs, 9,715,712 paths π, 11,272,192 trees, 40,408,064 paths τ |
-| Steps 2 to 5, every F and (u,v) at the top | 131,072 runs at n = 4, and 7,062,375 at n = 5 sampled |
-| Section 4, adversarial F, any tree path meeting 3/4 | 171,167 runs at n ≤ 150, largest side 75.0%, up to 8 levels |
-| Section 5, F and (S) on H | 134,174 runs with id keys, 65,960 with the repaired keys, 346,038 checks of Lemma 3 |
-| Counted primitives | 48,077 runs, at most 793 calls at n ≤ 80, DAGs to n = 400 with calls/log² n ≤ 8.6 |
-| Lean | a scratch copy compiled, 16 main theorems with the three standard axioms, statements of Lemmas 1 and 2, Fact 1 and `left_isPath` read against the note |
-
-All its controls fired: `shallow`, `headfirst`, `revhead`, `onepath`, `lastentry`, `badsep`, `nokeep`, `anyhead`. K₅ and K₃,₃ were rejected, and K₁₂,₁₂ has no valid separator.
-
-It did not check the proofs of the tools, true rounds, the protocols of [2] and [3], the text of [7], Schudy beyond metadata, the planar combination of [8], or exhaustive n = 6. The repairs were proof sketches when it wrote, and Lemma 5 above is ours from them. Lean does not cover it.
+- Planarity is needed in (S). The graph K₁₂,₁₂ with a spanning tree of depth 2 has no tree path that meets the bound of 3/4: a tree path has at most 5 vertices, and what is left is connected, with at least 19 of the 24 vertices.
+- The bound of 3/4 is reached by the separator of [2] itself: Algorithm 1 of [2], run centrally, has largest component exactly 75%.
+- Numerically, levels stay within log_{4/3}|K|. The largest values seen are 6 at |K| = 96 with the threshold of step 1 at 12, and 13 at n ≤ 345 with that threshold at 2. Rounds of step 5 reach s for s = 1 to 7 and do not exceed it, and on DAGs there is always 1. Word counts stay at most 7.5 log₂ n, and calls to the primitives on DAGs up to n = 400 stay at most 8.6 log² n. Computing (T2) from (P) alone takes at most 146 aggregations on trees up to n = 16,384.
 
 ## References
 

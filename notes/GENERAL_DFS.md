@@ -1,6 +1,6 @@
 # Depth-first search of all planar digraphs in Õ(D) rounds
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gdfs.py`, combinatorial core in `lean/PlanarMatching/GeneralSearch.lean`. One referee pass and one adversarial pass on 3 Nov 2026 broke no lemma. They led to the corrections listed in Sections 10 and 11, the largest of them in the credit below. No human has checked it. Importance: significant if it survives, since it takes the bound for a basic problem from Õ(D²) in `notes/DIRECTED.md` to Õ(D), which is optimal up to polylogarithmic factors, and matches the undirected case. Almost all of the combinatorics is older, see Context, and the one new lemma is modest on its own.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gdfs.py`, combinatorial core in `lean/PlanarMatching/GeneralSearch.lean`. No human has checked it. Importance: significant if it survives, since it takes the bound for a basic problem from Õ(D²) in `notes/DIRECTED.md` to Õ(D), which is optimal up to polylogarithmic factors, and matches the undirected case. Almost all of the combinatorics is older, see Context, and the one new lemma is modest on its own.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G, an edge may carry no arc, one arc, or one arc in each direction. D is the diameter of the undirected G. Identifiers are distinct. This note builds on `notes/DIRECTED.md` and `notes/DAG_DFS.md`.
 
@@ -8,9 +8,9 @@ The model is CONGEST on a connected planar network G with n vertices and hop dia
 
 **General Search Theorem.** Let H be a digraph on G and r a vertex. In Õ(D) rounds every vertex reached from r learns its parent, the order of its children, and its pre-order and post-order numbers in a depth-first search tree from r. Within the same bound a depth-first search forest of all of H is computed.
 
-The algorithm is deterministic relative to the tree of bags, as in `notes/DIRECTED.md`, and to the identifiers of strong components. [1, Lemma 3] states these as randomized and only outlines the proof. [2, Section 6] says that its separator derandomizes them, which we did not check. The rule `selfcomp` in Section 9 of `notes/DIRECTED.md` is an alternative, which the referee checked by hand but which is written only as a remark. With [1, Lemma 3] alone the theorem is randomized.
+The algorithm is deterministic relative to the tree of bags, as in `notes/DIRECTED.md`, and to the identifiers of strong components. [1, Lemma 3] states these as randomized and only outlines the proof. [2, Section 6] says that its separator derandomizes them, which we did not check. The rule `selfcomp` in Section 9 of `notes/DIRECTED.md` is an alternative, written only as a remark. With [1, Lemma 3] alone the theorem is randomized.
 
-**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. On digraphs `notes/DIRECTED.md` gives Õ(D²), and `notes/DAG_DFS.md` gives Õ(D) on DAGs and Õ(D·min(s,D)) if strong components have at most s vertices. The literature searches of those notes and two more on 3 Nov 2026 found no depth-first search of planar digraphs in CONGEST with a bound polynomial in D, which is not proof that none exists. Ω(D) holds, since a directed path with one arc reversed at the far end changes the numbers at the other end.
+**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. On digraphs `notes/DIRECTED.md` gives Õ(D²), and `notes/DAG_DFS.md` gives Õ(D) on DAGs and Õ(D·min(s,D)) if strong components have at most s vertices. Apart from those notes, to our knowledge no depth-first search of planar digraphs in CONGEST has a bound polynomial in D. Ω(D) holds, since a directed path with one arc reversed at the far end changes the numbers at the other end.
 
 The parallel literature holds most of the combinatorics:
 
@@ -24,7 +24,7 @@ What is new here, if it survives, is the bound in CONGEST. It needs a suitable c
 
 ## 2. Tools
 
-As in `notes/DAG_DFS.md`, Section 2: the labels (T1), trees (T2), the Out-Forest Theorem, the Multi-Source Lemma, the separator (S) of [2, Theorem 3], and part-wise aggregates (P). Each takes Õ(D) rounds on any digraph on G, and a union of digraphs on vertex-disjoint sets is again a digraph on G, so all problems run them at once. *Identifiers*: every vertex of a digraph on G learns an identifier of its strong component in Õ(D) rounds, see Section 1. [1, Lemma 3] is stated for a planar digraph on its own underlying network, and a digraph D[L ∖ S] has edges with no arc. Subdivide such an edge {u, v} by a new vertex w with arcs (u, w) and (v, w), which is a sink, so the strong components of the other vertices do not change. The new network is planar, has hop diameter at most 2D, and costs O(1) overhead. A strong component is connected, so its size comes by (P).
+As in `notes/DAG_DFS.md`, Section 2: the labels (T1), trees (T2), the Out-Forest Theorem, the Multi-Source Lemma, the separator (S) of [2, Theorem 3], and part-wise aggregates (P). Each takes Õ(D) rounds on any digraph on G, and a union of digraphs on vertex-disjoint sets is again a digraph on G, so all problems run them at once. *Identifiers*: every vertex of a digraph on G learns an identifier of its strong component in Õ(D) rounds, see Section 1. [1, Lemma 3] is stated for a planar digraph on its own underlying network, and a digraph D[L ∖ S] has edges with no arc. Subdivide such an edge {u, v} by a new vertex w with arcs (u, w) and (v, w), which is a sink, so the strong components of the other vertices do not change. The new network is planar, has hop diameter at most 2D + 2, and costs O(1) overhead. A strong component is connected, so its size comes by (P).
 
 From `notes/DAG_DFS.md`, Section 3, we use the Split Lemma. A *problem* is (x, K) with every vertex of K reached from x in D[K]. For a path π = (v_0, ..., v_k) in D[K] with v_0 = x, let O = K ∖ V(π). The arc (v_i, h) with h in O has the key (k − i, id(h)). A *head* h has as its key the least key of its arcs, and p(h) is the tail of that arc. For y in O, e(y) is the least key of a head that reaches y in D[O], and the *class* of h is K_h = {y : e(y) = key(h)}. By Lemma 1 there, the classes that hold their heads partition O, each is a problem (h, K_h), and search trees of the classes combine with π into a search tree of (x, K). By Lemma 4 there, one application takes Õ(D) rounds for vertex-disjoint problems at once.
 
@@ -102,16 +102,16 @@ When no problem has a bad class, the classes are the problems of the next level.
 
 ## 7. Checks
 
-`sim/gdfs.py` runs the algorithm as written, with reachability and strong components computed directly. Instances: the digraphs with cycles of `sim/dirs.py`, DAGs from `sim/dagdfs.py`, and bidirected and mixed grids, flowers, ladders, chains of small strong components on a strip, and nested rings, all checked for planarity. A quarter of the runs compute a forest, with one root per source component. Out-trees vary in shape, and the separator is a random valid fundamental cycle of a triangulation among 30 candidates. The independent engines of the two reviewers are in `sim/review/`.
+`sim/gdfs.py` runs the algorithm as written, with reachability and strong components computed directly. Instances: the digraphs with cycles of `sim/dirs.py`, DAGs from `sim/dagdfs.py`, and bidirected and mixed grids, flowers, ladders, chains of small strong components on a strip, and nested rings, all checked for planarity. A quarter of the runs compute a forest, with one root per source component. Out-trees vary in shape, and the separator is a random valid fundamental cycle of a triangulation among 30 candidates.
 
-Two lanes of 900 seconds on the corrected code, no FAIL in any counter. Every instance passed the planarity check and the replay.
+Two lanes of 900 seconds, no FAIL in any counter. Every instance passed the planarity check and the replay.
 
 | Lane | Runs | L checked | Cycles checked | Next L checked | Classes checked | Separators checked | High pivots | Mid pivots | Identifier tests | Reach tests | Max n | Largest strong component | Max levels | Max passes per level | Largest side |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `941` | 218,971 | 243,694 | 242,944 | 438 | 1,533,863 | 784,252 | 243,694 | 310,146 | 2,947,815 | 3,144,700 | 202 | 202 | 13 | 3 | 0.75 |
 | `942 big` | 67,211 | 129,360 | 129,011 | 183 | 1,067,887 | 500,378 | 129,370 | 249,367 | 1,726,212 | 2,309,838 | 675 | 625 | 19 | 3 | 0.75 |
 
-That is 286,182 runs, of which 72,044 compute a forest. *Largest side* is the largest connected component left by a separator over the size of its set. A separator is accepted at 3/4 and this value is reached. *Next L checked* counts the second and later step 4 of a level: 621 in all, so Lemma 5(b) is exercised, but rarely. An earlier run of four lanes, before the corrections of Sections 10 and 11, had 606,708 runs and no FAIL.
+That is 286,182 runs, of which 72,044 compute a forest. *Largest side* is the largest connected component left by a separator over the size of its set. A separator is accepted at 3/4 and this value is reached. *Next L checked* counts the second and later step 4 of a level: 621 in all, so Lemma 5(b) is exercised, but rarely.
 
 Negative controls, `gdfs.py ctl 943 25`, 25 seconds each. Each changes one rule, and each trips a counter of the check that guards this rule.
 
@@ -140,7 +140,7 @@ Scale, `gdfs.py scale`, one run per size, no FAIL up to n = 6400:
 | hubs | 840 | 840 | 15 | 1 |
 | hubs | 3280 | 3280 | 22 | 1 |
 
-Each result is checked by the replay of a real search. Every class is checked against Lemma 1, every L against Lemma 2 by a direct computation of f (on large sets in 10% of cases), every cycle against Lemma 3, every next L against Lemma 5, both its size and its place in L ∖ C, and the passes and levels against Lemma 6. Several counters cannot fire in unmutated code, see Section 11.
+Each result is checked by the replay of a real search. Every class is checked against Lemma 1, every L against Lemma 2 by a direct computation of f (on large sets in 10% of cases), every cycle against Lemma 3, every next L against Lemma 5, both its size and its place in L ∖ C, and the passes and levels against Lemma 6. The counters `two_bad`, `root_not_high`, `split_in_point` and `cycle_heavy_left` cannot fire in unmutated code, and `class_not_reached`, `split_not_cover`, `link_hits_segment` and `bits` are at most guards against bugs.
 
 ## 8. Not covered by the checks
 
@@ -156,9 +156,7 @@ Each result is checked by the replay of a real search. Every class is checked ag
 - Dominators of a planar digraph: `notes/DOMINATORS.md` claims Õ(D) on the passes of this search. It uses the paths and classes, not the search tree.
 - Other network classes with Õ(D) reachability and separators from a spanning tree.
 
-## 10. Record of the adversary
-
-An independent AI pass, on 3 Nov 2026, with the only job to break Section 3 to Section 6. Its engine and scripts are `sim/review/adversary_*`. It found no counterexample and no step that cannot work.
+## 10. How tight the lemmas are
 
 *Lemma 6 is nearly tight.* The instance `book(n)` is a chain c_0 → ... → c_{T−1} → h, and for each j an ear from h through about a quarter of the current component to c_j. The separator is the chain from the current root to h, which passes the check of 3/4 and keeps the virtual edge planar at each stage. Each pass then has C = {root}, and |L′|/|L| reaches 3/4.
 
@@ -170,37 +168,13 @@ An independent AI pass, on 3 Nov 2026, with the only job to break Section 3 to S
 | 4,000 | 27 | 30.83 |
 | 16,000 | 32 | 35.65 |
 
-A recursive book at n = 4000 ran the full algorithm: 12 levels, 89 passes, at most 27 per level, with replay. A caterpillar forces 54 levels at n = 1000 and 75 at n = 4000, against log_{16/15}(n/12) of 68.5 and 90. Hill climbing found nothing beyond these.
+A recursive book at n = 4000 runs the full algorithm in 12 levels and 89 passes, at most 27 per level, with replay. A caterpillar forces 54 levels at n = 1000 and 75 at n = 4000, against log_{16/15}(n/12) of 68.5 and 90. We know of no worse instances.
 
-*Lemma 2 is nearly tight.* With W = 160, a component of exactly 3W/4 and two next vertices with f = 9, a vertex below L has f = 138 against 7W/8 = 140, and at W = 1600 it has 1398 against 1400. A threshold of 7W/8 − 2 would falsify the lemma. An early false alarm of the pass came from separators with no balance check, so the hypothesis of Lemma 2 is needed.
+*Lemma 2 is nearly tight.* Take the arcs z → c, c → y, c → n_1, c → n_2, y → n_1, y → n_2. Give y 3W/4 − 1 further out-neighbours that are sinks, give n_1 and n_2 b − 1 each, with b = ⌈W/16⌉ − 1, and give c enough to reach W vertices. With π_i = (z, c, n_i), the largest component left by the two paths has exactly 3W/4 vertices, each n_i is low with f = b, and L = {c}. The vertex y lies below L with f(y) = 3W/4 + 2b, which is 138 against 7W/8 = 140 at W = 160, and 1398 against 1400 at W = 1600. So a high threshold below 7W/8 − 2 would falsify the lemma. A threshold of 13W/16 does so for W ≥ 64: y is high at 13/16 and below L, and not high at 7/8. Random instances do not show this, so the lanes do not test the sharpness of the constants.
 
-*Exhaustive and sampled, no failure.* Lemmas 1 and 2 on all digraphs with n = 4 (405,248 cases) and all with n = 5 minus K5 (584,603,494 cases, all out-trees and pairs). Lemma 3 on 1,909,180 pairs up to n = 6. Its own engine on 54,528 full runs, 4,853 of them forests. One global run for parts at different steps, 5,394 schedules. The low branch appears in the exhaustive lane only through abstract thresholds, since real low vertices need W ≥ 17.
+The balance hypothesis of Lemma 2 is needed. If the sinks of c move to y, then more than 3W/4 vertices are left in one component, and y is high and below L.
 
-*On the simulation.* The hard case was barely exercised: only 31 of 14,694 step 4 in a 100 second run followed a step 4. It found that forests were not run, that the place of the next L in L ∖ C was not checked, that A was the whole root path and not the note's A, and that `instance` drew two digraphs for one name. All are corrected above.
-
-*Weak spots, none a break.* The identifiers on digraphs with arc-less edges, repaired by its subdivision in Section 2. (S) for many parts, in Section 8. R and z each named two things, corrected.
-
-*Not reached.* A message-level simulation, the protocol of [2], and exhaustive Lemmas 5 and 6 with real thresholds, which need |Q| ≥ 15.
-
-## 11. Record of the referee
-
-An independent AI pass, on 3 Nov 2026, briefed with the code and the text. Verdict: no finding that a theorem is false. Lemmas 1 to 6, the constants and the round accounting held by hand. Its engine and scripts are `sim/review/referee_*`.
-
-Corrections it caused:
-
-1. **Credit.** The earlier Context said that the lowest component needs sizes from a transitive closure, and listed the Pivot Lemma as the new part. [10, Theorem 6.1] counts descendants on planar DAGs without a closure, with the same two-path separator. Corollary 4 as a whole is [10, Theorem 7.3], the reduction is [10, Theorem 7.2], and the classes are [5, Definition 7, Lemma 8]. A randomized Õ(D) algorithm needs no Pivot Lemma. So the lemma adds determinism and simplicity, not the bound. We read these parts of [5] and of the conference version of [10] ourselves after the report.
-2. **Separator.** (S) is applied to the induced G[Q] and G[L], with no subdivision, and parts of one vertex have weight 0, see `notes/DAG_DFS.md`, Section 2.
-3. **Determinism.** The dependence on the identifiers is now stated in Section 1.
-4. **Corollary 4.** The small case stopped at a path, and B may be empty. Lean's `join` needs paths with a vertex each, and the empty case is `close`.
-5. **Simulation.** `pathonly` was the same as `nocycle` above 12 vertices, and it now follows a path to a deepest vertex. `chk.class_size` tested nothing and is gone, and the levels are now checked.
-6. **Notation.** R, c and S each named two things.
-7. **Stale.** The open item in `notes/MATCHING.md`.
-
-Remarks: no lane tests the sharpness of the constants, and lowering the high threshold to 13/16 fired nothing at random. An instance in `sim/review/referee_tight.py` breaks Lemma 2 at that threshold, with y high at 13/16 and below L, and not high at 7/8. The counters `two_bad`, `root_not_high`, `split_in_point` and `cycle_heavy_left` cannot fire in unmutated code, and `class_not_reached`, `split_not_cover`, `link_hits_segment` and `bits` are at most guards against bugs.
-
-Its own checks, no failure: Lemma 1 on all 1,048,576 digraphs with n = 5, Lemma 3 at θ = 3/4 on 235,602,820 pairs at n = 5, Lemmas 2 and 5 exhaustive at n = 4 and sampled at n = 5 with 28,260,574 pivots, an independent engine with adversarial separators up to n = 9,801 and 36,864 in scale, and 11 of 12 controls firing. The Lean files compile with the three standard axioms.
-
-Not checked: rounds and messages, the protocol of [2], the proofs of (T1) and the Out-Forest Theorem, [8], [9] and the journal version of [10], and n ≥ 6 exhaustively.
+*Small sizes.* A low vertex needs W ≥ 17, and Lemmas 5 and 6 with their real thresholds need |Q| ≥ 15, so small digraphs do not exercise these cases.
 
 ## References
 

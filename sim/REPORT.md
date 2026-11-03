@@ -68,7 +68,7 @@ control takes a vertex when first entered, which does give shortcuts.
 
 ## Two visits
 
-After the referee's correction, the check in `mm.py` allows at most two visits. Short reruns, no failure: path lane 32,253 runs with 664,821 hub checks; matching lane 884
+The check in `mm.py` allows at most two visits. Short reruns, no failure: path lane 32,253 runs with 664,821 hub checks; matching lane 884
 runs with 284,326 hub checks.
 
 ## Reproduce

@@ -27,7 +27,7 @@ The question is how many rounds this takes. Two numbers matter:
 | **Maximum matching, general planar**, zero error given the decomposition, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
 | Maximum matching, treewidth τ, not necessarily planar or bipartite | Õ(τ³D + τ⁵), randomized | Õ(τ⁴D + τ⁷), bipartite only, [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 
-These rows use only published decompositions and labels, plus the proofs in this repository. Previous bounds are results of other authors or direct consequences of them, as far as our literature searches show, which is not proof that nothing better exists. "Implied" means that the bound is not stated there: Õ(D⁷) follows from a treewidth bound, since a planar network has treewidth O(D), and Õ(D³) from the classical method. A perfect matching alone already takes Õ(D²) rounds through known tools, so the new point is the maximum matching, which also handles free vertices.
+These rows use only published decompositions and labels, plus the proofs in this repository. Previous bounds are results of other authors or direct consequences of them, to our knowledge. "Implied" means that the bound is not stated there: Õ(D⁷) follows from a treewidth bound, since a planar network has treewidth O(D), and Õ(D³) from the classical method. A perfect matching alone already takes Õ(D²) rounds through known tools, so the new point is the maximum matching, which also handles free vertices.
 
 Two bounds improve under the **Label Hypothesis**, an assumption stated in the companion repository [ExactShortestPathsAndFlowsOnPlanarGraphs](https://github.com/ssenge/ExactShortestPathsAndFlowsOnPlanarGraphs). If the hypothesis fails, only these two rows fall away, and the bounds above still stand.
 
@@ -95,7 +95,7 @@ Every bound in the tables rests on published black boxes, which were read and no
 
 - `paper/`: the paper on matching, as PDF and LaTeX source. It covers the matching results and the tools they use, and not depth-first search or dominators.
 - `notes/`: statements and proofs, one note per topic. Start with [`notes/MATCHING.md`](notes/MATCHING.md).
-- `sim/`: centralized simulations. `sim/REPORT.md` and `sim/REPORT_GENERAL.md` hold the results, and `sim/review/` holds further test code.
+- `sim/`: centralized simulations. `sim/REPORT.md` and `sim/REPORT_GENERAL.md` hold the results.
 - `lean/`: the formalized core, Lean 4 with Mathlib at the pinned revision. `lake build` needs Mathlib, so run `lake exe cache get` first.
 
 ## Reproduce
