@@ -23,6 +23,8 @@ The question is how many rounds this takes. Two numbers matter:
 |---|---|---|
 | **Maximum matching, bipartite planar** | **Õ(D²)** | Õ(D³), implied by the classical separator method with one exact shortest-path run per insertion; Õ(D⁷), implied by the treewidth bound of [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 | Maximum weight matching, bipartite planar | Õ(D³) | Õ(D³), implied by the same method. New here is the complete proof, since the published one is deferred to a full version |
+| Maximum weight matching, bipartite planar, edge weights in {0,…,W} | Õ(D² + W·D), so Õ(D²) for W = Õ(D) | Õ(D³), implied by the same method |
+| Maximum weight matching, bipartite planar, weights on the vertices, of any polynomial size | Õ(D²) | Õ(D³), implied by the same method |
 | Minimum vertex cover and maximum independent set, bipartite planar | Õ(D²) | Õ(D³), from the first row with König's theorem |
 | **Maximum matching, general planar**, zero error given the decomposition, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
 | Maximum matching, treewidth τ, not necessarily planar or bipartite | Õ(τ³D + τ⁵), randomized | Õ(τ⁴D + τ⁷), bipartite only, [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
@@ -54,6 +56,8 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 
 **Weighted matching.** The insertion becomes a primal-dual step, with one exact shortest-path computation per insertion.
 
+**Small and vertex weights.** Reachability costs Õ(D) rounds, an exact shortest-path computation Õ(D²). Small edge weights need only reachability if the separator vertices of a bag go in together, with unit dual steps shared by all of them. With weights on the vertices, the gain of an alternating path depends only on its two ends, so one reach set per insertion decides it.
+
 **General matching.** Augmenting paths are hard without bipartiteness, so this route is algebraic. It runs Gaussian elimination on a random Tutte matrix along the tree of bags, keeping at most Õ(D²) words per bag, and then finds mates top down. A Gallai-Edmonds check verifies the answer, so, given a valid decomposition, the algorithm never outputs a wrong result: it restarts on a failed check.
 
 ## All results
@@ -64,6 +68,8 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 |---|---|---|
 | Maximum matching, bipartite planar | Õ(D²) | [`notes/MATCHING.md`](notes/MATCHING.md) |
 | Maximum weight matching, optimal dual, minimum weight perfect matching | Õ(D³) | same note, with [`notes/EXACT_LABELS.md`](notes/EXACT_LABELS.md) |
+| Maximum weight matching with edge weights in {0,…,W}, optimal dual | Õ(D² + W·D) | [`notes/SMALL_WEIGHTS.md`](notes/SMALL_WEIGHTS.md) |
+| Maximum weight matching with weights on the vertices | Õ(D²) | same note |
 | Minimum vertex cover, maximum independent set | Õ(D²) | [`notes/MATCHING.md`](notes/MATCHING.md) |
 | Maximum matching, general planar, Gallai-Edmonds sets | Õ(D²), randomized, zero error given the decomposition | [`notes/GENERAL.md`](notes/GENERAL.md) |
 | Maximum matching, treewidth τ | Õ(τ³D + τ⁵), randomized | same note |
@@ -109,6 +115,7 @@ Every simulation takes a seed and a time limit in seconds, and prints its counte
 | `python3 -I sim/gm.py <seed> <seconds> [big]` | General matching and its certificate |
 | `python3 -I sim/gm.py tw <seed> <seconds>` | Treewidth |
 | `python3 -I sim/labels.py <seed> <seconds> [big]` | Exact labels and virtual source |
+| `python3 -I sim/wsmall.py <seed> <seconds> [big]` | Small edge weights and vertex weights. `sim/wsmall.py limits` checks the two examples of the limits |
 | `python3 -I sim/dirs.py`, `sim/dagdfs.py`, `sim/gdfs.py`, `sim/dom.py` with `<seed> <seconds> [big]` | The notes on digraphs |
 
 The same scripts take `ctl <seed> <seconds>` for their negative controls, which must fail. `sim/gm.py` has more lanes, listed in Section 7 of [`notes/GENERAL.md`](notes/GENERAL.md).

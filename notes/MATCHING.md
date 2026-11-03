@@ -263,6 +263,7 @@ Section 4, gives Z in Õ(D) rounds.
 
 ## 7. Open
 
+- Õ(D²) for all polynomial weights. `notes/SMALL_WEIGHTS.md` proves it for W = Õ(D) and for weights on the vertices, and shows what stands in the way otherwise.
 - Õ(D) for matching. Batching hubs that lie on a face, by [2, Lemma 2], is the natural attempt. Augmentations interact.
 - `notes/GENERAL_DFS.md` claims Õ(D) for planar DFS on digraphs, and `notes/DIRECTED.md` reproves the Path Lemma with no loop erasure.
 
