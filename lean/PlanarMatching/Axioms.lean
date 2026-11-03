@@ -79,3 +79,17 @@ import PlanarMatching
 #print axioms PlanarMatching.GeneralSearch.pass_a
 #print axioms PlanarMatching.GeneralSearch.pass_b
 #print axioms PlanarMatching.GeneralSearch.pass_piece
+#print axioms PlanarMatching.Dominators.PathStep.lemma1a
+#print axioms PlanarMatching.Dominators.PathStep.lemma1b
+#print axioms PlanarMatching.Dominators.PathStep.dom_path
+#print axioms PlanarMatching.Dominators.PathStep.dom_off
+#print axioms PlanarMatching.Dominators.PathStep.closed_end
+#print axioms PlanarMatching.Dominators.PathStep.closed_le
+#print axioms PlanarMatching.Dominators.PathStep.laminar
+#print axioms PlanarMatching.Dominators.class_dom
+#print axioms PlanarMatching.Dominators.split_out
+#print axioms PlanarMatching.Dominators.candidate
+#print axioms PlanarMatching.Dominators.candidate_exists
+#print axioms PlanarMatching.Dominators.ring
+#print axioms PlanarMatching.Dominators.delta_ring
+#print axioms PlanarMatching.Dominators.readoff

@@ -15,6 +15,7 @@ import dagdfs as dd
 import dirs
 
 SMALL = 12
+ON_PATH = ON_SMALL = None  # hooks for sim/dom.py
 
 
 def sccs(arcs, allowed):
@@ -185,8 +186,8 @@ def cycle_separator(L, arcs, st, rng, mode):
     else:
         par = dd.out_tree(r, L, arcs, rng)
         pu, pv = rand_separator(r, L, arcs, par, st, rng)
-        A = pu
-        B = [v for v in pv if v not in set(pu)]
+        k = sum(1 for a, b in zip(pu, pv) if a == b)
+        A, B = pu[k - 1:], pv[k:]
         if mode == 'onepath_cycle':
             B = []
         if mode == 'nolink':
@@ -264,7 +265,7 @@ def one_pass(x, Q, W, arcs, kids, st, rng, mode, n, prev):
         L = next(c for c in sccs(arcs, Q) if got in c)
         if prev is not None:
             st['chk.pieces'] += 1
-            if len(L) * 4 > 3 * prev:
+            if len(L) * 4 > 3 * prev[0] or not L <= prev[1]:
                 st['FAIL.pieces'] += 1
         st['max.L_over_Q_x100'] = max(st['max.L_over_Q_x100'], 100 * len(L) // len(Q))
         below = dd.reach(arcs, list(L), Q) - L
@@ -275,7 +276,8 @@ def one_pass(x, Q, W, arcs, kids, st, rng, mode, n, prev):
         if mode == 'nocycle':
             C = [got]
         elif mode == 'pathonly':
-            C = small_path(got, L, arcs) if len(L) < SMALL else dd.root_path(dd.out_tree(got, L, arcs, rng), got)
+            far = dd.out_tree(got, L, arcs, rng)
+            C = small_path(got, L, arcs) if len(L) < SMALL else dd.root_path(far, max(L, key=lambda v: len(dd.root_path(far, v))))
         else:
             C = cycle_separator(L, arcs, st, rng, mode)
         depth = {x: 0}
@@ -288,6 +290,8 @@ def one_pass(x, Q, W, arcs, kids, st, rng, mode, n, prev):
         st['FAIL.R_not_path'] += 1
     keyz, via = dd.order_keys(R, arcs, Q - set(R))
     new = dd.split(Q, R, arcs, kids, st, 'shallow' if mode == 'shallow' else 'ok', rng, n, rng.random() < 0.05)
+    if ON_PATH:
+        ON_PATH(Q, R, new)
     m = R[-1]
     fm = dd.reach(arcs, [m], Q)
     pt = next(c for c in sccs(arcs, Q) if m in c)
@@ -303,7 +307,7 @@ def one_pass(x, Q, W, arcs, kids, st, rng, mode, n, prev):
                 st['FAIL.mid_left_bad'] += 1
             elif via[z] not in L or z not in L:
                 st['FAIL.bad_outside_L'] += 1
-    return new, (len(L) if L else None)
+    return new, ((len(L), L - set(C)) if L else None)
 
 
 def solve(arcs, roots, n, rng, st, mode='ok'):
@@ -323,7 +327,7 @@ def solve(arcs, roots, n, rng, st, mode='ok'):
         worst = 0
         for x, K in probs:
             if len(K) < SMALL:
-                dd.small(x, K, arcs, kids)
+                (ON_SMALL or dd.small)(x, K, arcs, kids)
                 continue
             W = len(K)
             now, prev, count = [(x, K)], None, 0
@@ -344,14 +348,14 @@ def solve(arcs, roots, n, rng, st, mode='ok'):
                     if count > 4 * n:
                         return tops, kids, all_
             worst = max(worst, count)
-            for z, Kz in now:
-                st['chk.class_size'] += 1
             new += now
         st['max.passes_per_level'] = max(st['max.passes_per_level'], worst)
         st['n.passes'] += worst
         probs = new
         level += 1
     st['max.levels'] = max(st['max.levels'], level)
+    if level > 2 + math.log(max(n / 12, 1.01), 16 / 15):
+        st['FAIL.levels'] += 1
     return tops, kids, all_
 
 
@@ -451,7 +455,8 @@ def instance(rng, big):
     s = 26 if big else 14
     c = rng.randrange(8)
     if c < 2:
-        return dd.digraph(rng, big, 'general')[0], dd.digraph(rng, big, 'general')[3]
+        g = dd.digraph(rng, big, 'general')
+        return g[0], g[3]
     if c == 2:
         return 'bigrid', bigrid(rng.randrange(3, s), rng.randrange(3, s), rng.choice([1, .9, .7, .5, .3]), rng)
     if c == 3:
@@ -478,9 +483,16 @@ def run_one(rng, st, big=False, mode='ok'):
     if not nx.check_planarity(U)[0]:
         st['FAIL.not_planar'] += 1
         return
-    roots = [rng.choice(sorted(V))]
     n = len(V)
     arcs = {u: set(vs) for u, vs in arcs.items()}
+    roots = [rng.choice(sorted(V))]
+    if rng.random() < .25:
+        comps = list(sccs(arcs, V))
+        of = {v: i for i, c in enumerate(comps) for v in c}
+        entered = {of[v] for u in arcs for v in arcs[u] if of[u] != of[v]}
+        roots = [min(c) for i, c in enumerate(comps) if i not in entered]
+        rng.shuffle(roots)
+        st['n.forests'] += 1
     tops, kids, all_ = solve(arcs, roots, n, rng, st, mode)
     dd.check(tops, kids, all_, arcs, roots, st, False)
     st['runs'] += 1
@@ -524,6 +536,11 @@ def scale():
             V = set(arcs) | {v for vs in arcs.values() for v in vs}
             arcs = {u: set(vs) for u, vs in arcs.items()}
             r = min(V)
+            U = nx.Graph()
+            U.add_edges_from((u, v) for u in arcs for v in arcs[u])
+            st['chk.planar'] += 1
+            if not nx.check_planarity(U)[0]:
+                st['FAIL.not_planar'] += 1
             t0 = time.time()
             tops, kids, all_ = solve(arcs, [r], len(V), rng, st)
             dd.check(tops, kids, all_, arcs, [r], st, False)

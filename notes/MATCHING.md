@@ -265,7 +265,7 @@ Section 4, gives Z in Õ(D) rounds.
 ## 7. Open
 
 - Õ(D) for matching. Batching hubs that lie on a face, by [2, Lemma 2], is the natural attempt. Augmentations interact.
-- Õ(D) for planar DFS on digraphs. `notes/DIRECTED.md` gives Õ(D²), and reproves the Path Lemma with no loop erasure.
+- `notes/GENERAL_DFS.md` claims Õ(D) for planar DFS on digraphs, and `notes/DIRECTED.md` reproves the Path Lemma with no loop erasure.
 
 ## 8. In Lean
 
