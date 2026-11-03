@@ -22,6 +22,10 @@ import PlanarMatching
 #print axioms PlanarMatching.Decomp.chain_comparable
 #print axioms PlanarMatching.Decomp.arc_in_chain
 #print axioms PlanarMatching.Decomp.no_cross
+#print axioms PlanarMatching.Decomp.walk_stays
+#print axioms PlanarMatching.Decomp.isChain_verts
+#print axioms PlanarMatching.Decomp.exact_labels
+#print axioms PlanarMatching.Decomp.distQ_eq
 #print axioms PlanarMatching.insertion
 #print axioms PlanarMatching.mate_exists
 #print axioms PlanarMatching.jacobi_block

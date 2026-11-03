@@ -1,6 +1,6 @@
 # Exact distance labels and offsets in Õ(D²) rounds, with no hypothesis
 
-**Status.** Claim, written 3 Nov 2026. Proof below, simulation in `sim/labels.py`. No human has checked it. Importance: modest. The method is the classical bottom-up one. Labels are in [1] for undirected networks, and [2, Lemma 4] states directed shortest paths from a set S of sources in Õ(D² + D·|S|) rounds. What this note adds is a complete proof for digraphs, whose proof [2] defers to its full version, and the use of the labels with arbitrary offsets, which keeps the bound free of the number of sources.
+**Status.** Claim, written 3 Nov 2026. Proof below, simulation in `sim/labels.py`, the distance formula of Lemma 1 in Lean (`lean/PlanarMatching/Labels.lean`). No human has checked it. Importance: modest. The method is the classical bottom-up one. Labels are in [1] for undirected networks, and [2, Lemma 4] states directed shortest paths from a set S of sources in Õ(D² + D·|S|) rounds. What this note adds is a complete proof for digraphs, whose proof [2] defers to its full version, and the use of the labels with arbitrary offsets, which keeps the bound free of the number of sources.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G, with nonnegative integer lengths of polynomial size, zero allowed.
 
@@ -76,7 +76,7 @@ Negative controls, `labels.py ctl`. Each must give wrong values on some run.
 | `rootonly` | the query looks only at the root | 3,685 | not checked | 2,810 |
 | `swap` | the query uses d_X(v, h) in place of d_X(h, v) | 3,648 | not checked | 3,374 |
 
-**Not covered.** Rounds and messages: the code counts words, not rounds. It does not use real bags of [1]; its separators are two paths of a BFS tree, with no embedding. The proofs of the corollaries are reductions, and the code does not run them on this oracle, since it matches the oracle's output exactly. No Lean.
+**Not covered.** Rounds and messages: the code counts words, not rounds. It does not use real bags of [1]; its separators are two paths of a BFS tree, with no embedding. The proofs of the corollaries are reductions, and the code does not run them on this oracle, since it matches the oracle's output exactly. Lean: `lean/PlanarMatching/Labels.lean` proves, on the abstract decomposition of `Decomp.lean`, Fact 1 for walks whose inner vertices avoid the separator (`walk_stays`) and the distance formula of Lemma 1 with distances as least walk lengths and the hub digraph Q, under the hypothesis that the children cover the bag (`exact_labels`, `distQ_eq`). The rounds are not covered.
 
 ## References
 

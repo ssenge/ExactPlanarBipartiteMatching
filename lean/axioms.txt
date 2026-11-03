@@ -20,6 +20,10 @@
 'PlanarMatching.Decomp.chain_comparable' does not depend on any axioms
 'PlanarMatching.Decomp.arc_in_chain' does not depend on any axioms
 'PlanarMatching.Decomp.no_cross' does not depend on any axioms
+'PlanarMatching.Decomp.walk_stays' depends on axioms: [propext]
+'PlanarMatching.Decomp.isChain_verts' depends on axioms: [propext]
+'PlanarMatching.Decomp.exact_labels' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PlanarMatching.Decomp.distQ_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanarMatching.insertion' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanarMatching.mate_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanarMatching.jacobi_block' depends on axioms: [propext, Classical.choice, Quot.sound]

@@ -6,3 +6,4 @@ import PlanarMatching.Tutte
 import PlanarMatching.DagSearch
 import PlanarMatching.GeneralSearch
 import PlanarMatching.Dominators
+import PlanarMatching.Labels
