@@ -68,35 +68,33 @@ This rules out the reuse of stale values in one bag, and nothing more. In this i
 
 ## 5. Checks
 
-`sim/wsmall.py` runs both algorithms on the BDD code and the planar families of `sim/mm.py` and `sim/fam.py`, with the Path Lemma and the multi-source rule on the labels. It checks (I1), (I2) and y ≤ W after each phase, the bounds |H_s| and W on the flips and dual steps of each batch, the optimum against an independent solver and against brute force on small instances, and strong duality. Weights run from W = 1 to 10⁶, with long steps above W = 30 and at random below, and vertex weights go up to 10⁶.
+`sim/wsmall.py` runs both algorithms on the BDD code and the planar families of `sim/mm.py` and `sim/fam.py`, with the Path Lemma and the multi-source rule on the labels. After each phase it checks (I1), (I2), (I3), y ≤ W, that all roots have the same dual and that S is the true reach set. Each run solves one instance with edge weights and one with vertex weights. It compares each optimum with an independent solver, and with brute force on instances of at most 18 edges, and it checks strong duality for edge weights. Unit steps run up to W = 30. Long steps also run at W = 1000 and 10⁶, where the number of dual steps stays far below W, so the bound W is tested only at small W. Vertex weights go up to 10⁶.
 
-| Lane | Runs | Searches | Checks | Most hubs in a bag | Failures |
-|---|---:|---:|---:|---:|---:|
-| `wsmall.py 5001 300` | 17,799 | 1,593,543 | 30,010,411 | 72 | 0 |
-| `wsmall.py 5002 300 big` | 3,992 | 631,357 | 16,954,463 | 169 | 0 |
+| Lane | Runs | Reach sets | Most hubs in a bag | Most dual steps in a batch, unit | The same, long | Most requests in a bag | Failures |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `wsmall.py 6001 300` | 11,502 | 1,000,725 | 76 | 30 | 46 | 3 | 0 |
+| `wsmall.py 6002 300 big` | 2,848 | 438,016 | 169 | 30 | 102 | 4 | 0 |
 
-Each run solves one instance with edge weights and one with vertex weights, and each result is compared with the independent solver.
+The checks on the number of flips and dual steps of a batch hold almost by construction, and no control triggers them. The comparisons with the solver are the real test.
 
-Negative controls, `wsmall.py ctl`. Each must give a wrong optimum on some run.
+Negative controls, `wsmall.py ctl`. Each must give a wrong optimum on some run. They run on the smaller families for 25 seconds each. A control with few runs is slow because its wrong rule keeps taking dual steps.
 
 | Control | What it changes | Runs | Runs with a wrong optimum |
 |---|---|---:|---:|
-| `edge:anyarc` | non-tight arcs are used as well | 3,188 | 2,881 |
-| `edge:nomatched` | no arcs along matched edges | 3,262 | 1,135 |
-| `edge:noswap` | a matched vertex with y = 0 is no end | 24 | 3 |
-| `edge:nofreeb` | a free vertex is no end | 3,031 | 3,004 |
-| `edge:oneside` | the dual step leaves the other side alone | 15 | 4 |
-| `edge:overstep` | δ is one too large | 4 | 4 |
-| `edge:stoponeearly` | the batch ends at θ = 1 | 3,010 | 1,142 |
-| `vertex:noswap` | no ends on the side of h | 3,403 | 823 |
-| `vertex:nofree` | no free ends | 3,936 | 3,925 |
-| `vertex:anyfree` | any free end, in place of the best | 3,270 | 1,488 |
-| `vertex:worst` | the end with the smallest gain | 3,676 | 3,495 |
-| `vertex:always` | flips also with gain at most 0 | 3,397 | 741 |
+| `edge:anyarc` | non-tight arcs are used as well | 1,650 | 1,514 |
+| `edge:nomatched` | no arcs along matched edges | 1,674 | 600 |
+| `edge:noswap` | a matched vertex with y = 0 is no end | 3 | 1 |
+| `edge:nofreeb` | a free vertex is no end | 1,966 | 1,944 |
+| `edge:oneside` | the dual step leaves the other side alone | 3 | 1 |
+| `edge:overstep` | δ is one too large | 2 | 1 |
+| `edge:stoponeearly` | the batch ends at θ = 1 | 2,099 | 773 |
+| `vertex:noswap` | no ends on the side of h | 2,536 | 640 |
+| `vertex:nofree` | no free ends | 2,713 | 2,699 |
+| `vertex:anyfree` | any free end, in place of the best | 2,302 | 1,013 |
+| `vertex:worst` | the end with the smallest gain | 2,698 | 2,560 |
+| `vertex:always` | flips also with gain at most 0 | 2,399 | 507 |
 
-A control with few runs is slow because its wrong rule keeps taking dual steps. The controls run on the smaller families and for 25 seconds each.
-
-**Not covered.** Rounds and messages: the code counts phases, not rounds. It does not use real bags of [1]; its separators are two paths of a BFS tree, with no embedding. Sizes are small. No Lean.
+**Not covered.** Rounds and messages: the code counts phases, not rounds. It does not use real bags of [1]; its separators are two paths of a BFS tree, with no embedding. Leaves run the batch rule in place of an arbitrary optimal dual, the root r is found by a direct search in place of the labels, and there is no subdivision or padding. Requests in the Path Lemma stay few, as the table shows. Sizes are small. No Lean.
 
 ## References
 
