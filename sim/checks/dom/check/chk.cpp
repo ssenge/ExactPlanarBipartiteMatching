@@ -1,4 +1,4 @@
-// Independent referee checker for notes/DOMINATORS.md. Shares no code with sim/. All definitions are taken from the note's text.
+// Independent checker for notes/DOMINATORS.md. Shares no code with sim/. All definitions are taken from the note's text.
 //   chk exh N [part parts]       all digraphs on N vertices with root 0 reaching all, all entry sets, all simple paths
 //   chk abs K                    all tables (A,B) on K positions: Lemmas 2b,5,6, marks, Lemma 7, algebraic form
 //   chk absrand K SEED SECS      random tables

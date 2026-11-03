@@ -69,7 +69,7 @@ def reverse(arcs):
 
 
 def rand_separator(x, K, arcs, par, st, rng):
-    """(S) with an adversarial flavour: any fundamental cycle whose removal leaves at most 3/4, at random. Returns two root paths."""
+    """(S) with an worst-case flavour: any fundamental cycle whose removal leaves at most 3/4, at random. Returns two root paths."""
     U = nx.Graph()
     U.add_nodes_from(K)
     U.add_edges_from((u, v) for u in K for v in arcs.get(u, ()) if v in K)

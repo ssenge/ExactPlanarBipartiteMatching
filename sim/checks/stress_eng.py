@@ -1,6 +1,6 @@
 """Independent engine for notes/GENERAL_DFS.md, written from the note, not from sim/gdfs.py.
 All choices the note leaves open (F, separators, roots of Corollary 4, DFS of the small case, w in the link)
-are made by an adversary with lookahead. Every lemma is checked in exact integer arithmetic."""
+are made by an chooser with lookahead. Every lemma is checked in exact integer arithmetic."""
 import collections, math, random, sys
 import networkx as nx
 
@@ -268,7 +268,7 @@ def dfs_post(r, L, out, rng):
 
 
 def cor4_options(L, out, rev, und, rng, st, tries, script=None):
-    """Yields candidate cycles of Corollary 4 under different adversary choices."""
+    """Yields candidate cycles of Corollary 4 under different chooser choices."""
     Ls = sorted(L)
     if len(L) == 1:
         yield [Ls[0]]

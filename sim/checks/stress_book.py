@@ -1,6 +1,6 @@
 import collections, json, math, os, random, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import adversary_eng as eng
+import stress_eng as eng
 
 for n in (200, 400, 1000, 4000, 16000):
     out, chain, h, sizes = eng.ears(n)

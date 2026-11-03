@@ -10,7 +10,7 @@ Part ids, values and stores are functions of S[v] and of v's own arcs only. No r
 python3 -I -B who.py SEED SECS [big]
 """
 import collections, json, math, os, random, sys, time
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'simcopy'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 import networkx as nx
 
 WMAX = 4

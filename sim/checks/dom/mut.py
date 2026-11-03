@@ -2,7 +2,7 @@
 python3 -I -B mut.py SECS [only]"""
 import json, os, shutil, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, 'simcopy')
+SRC = os.path.join(HERE, '..', '..')
 DST = os.path.join(HERE, 'simmut')
 if os.path.exists(DST):
     shutil.rmtree(DST)

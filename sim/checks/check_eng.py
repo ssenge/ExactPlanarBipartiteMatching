@@ -430,7 +430,7 @@ def check_planar(arcs):
     return ok, G, emb
 
 
-# ------------------------------------------------------------------------------- separator (S): any tree path that meets 3/4, adversarial choice
+# ------------------------------------------------------------------------------- separator (S): any tree path that meets 3/4, worst-case choice
 def tree_path_set(par, u, v):
     pu, pv = tree_path(par, u), tree_path(par, v)
     a = {x: i for i, x in enumerate(pu)}

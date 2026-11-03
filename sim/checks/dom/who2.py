@@ -6,7 +6,7 @@ python3 -I -B who2.py lit              : the Section 4 text read literally on th
 import collections, json, math, os, random, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, 'simcopy'))
+sys.path.insert(0, os.path.join(HERE, '..', '..'))
 import networkx as nx
 import who
 import gdfs, dagdfs as dd
