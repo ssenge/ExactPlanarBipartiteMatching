@@ -10,7 +10,7 @@ The model is CONGEST on a connected planar network G with n vertices and hop dia
 
 **Order Theorem.** Let H be a digraph on G. In Õ(D) rounds every vertex learns a label of O(log² n) bits such that two vertices have equal labels exactly if they lie in one strong component, and label(u) < label(v) in lexicographic order for every arc (u,v) between two strong components. On a DAG this is a topological order.
 
-**Directed DFS Theorem.** Let H be a digraph on G and r a vertex. In Õ(D²) rounds every vertex reached from r learns its parent, the order of its children, and its pre-order and post-order numbers in a depth-first search tree from r. Within the same bound a depth-first search forest of all of H is computed.
+**Directed DFS Theorem.** Let H be a digraph on G and r a vertex. In Õ(D²) rounds every vertex reached from r learns its parent, the order of its children, and its pre-order and post-order numbers in a depth-first search tree from r. Within the same bound a depth-first search forest of all of H is computed. `notes/GENERAL_DFS.md` claims Õ(D), written later, which would supersede this bound.
 
 All three are deterministic relative to the tree of bags, and so deterministic by the derandomization stated in [5, Section 6] and [4, Corollary 2]. We rely on those statements and did not check the proofs behind them.
 
@@ -189,7 +189,7 @@ Negative controls, `sim/dirs.py ctl 8003 60`. Each breaks one rule of the proofs
 
 ## 8. Open
 
-- Õ(D) for depth-first search on digraphs. Two tree paths of a spanning tree are a balanced separator by [5, Theorem 3], but an out-forest need not span G, and a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. `notes/DAG_DFS.md` removes the first obstacle with connected classes, and the second on DAGs. A separator that bounds strong components only is enough: [16, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [16] and [7] find these on planar digraphs in parallel, and we do not know how to do so in Õ(D).
+- `notes/GENERAL_DFS.md` claims Õ(D) for depth-first search on all planar digraphs. What follows is the state before it. Two tree paths of a spanning tree are a balanced separator by [5, Theorem 3], but an out-forest need not span G, and a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. `notes/DAG_DFS.md` removes the first obstacle with connected classes, and the second on DAGs. A separator that bounds strong components only is enough: [16, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [16] and [7] find these on planar digraphs in parallel. `notes/GENERAL_DFS.md` finds them in Õ(D): two root paths of a spanning out-tree come from the separator, and a binary search on them picks the component.
 - Dominators of a planar digraph. Õ(D) on DAGs and integer ranks in topological order are in `notes/DAG_DFS.md`, which came after this note.
 
 ## 9. Record of the adversary

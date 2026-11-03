@@ -70,3 +70,12 @@ import PlanarMatching
 #print axioms PlanarMatching.DagSearch.exists_adj
 #print axioms PlanarMatching.DagSearch.fact1_exists
 #print axioms PlanarMatching.DagSearch.Run.isRight_iff
+#print axioms PlanarMatching.GeneralSearch.end_a
+#print axioms PlanarMatching.GeneralSearch.end_b
+#print axioms PlanarMatching.GeneralSearch.pivot
+#print axioms PlanarMatching.GeneralSearch.join
+#print axioms PlanarMatching.GeneralSearch.close
+#print axioms PlanarMatching.GeneralSearch.cycle_lemma
+#print axioms PlanarMatching.GeneralSearch.pass_a
+#print axioms PlanarMatching.GeneralSearch.pass_b
+#print axioms PlanarMatching.GeneralSearch.pass_piece

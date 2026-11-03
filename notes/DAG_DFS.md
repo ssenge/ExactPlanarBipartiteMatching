@@ -10,7 +10,7 @@ The model is CONGEST on a connected planar network G with n vertices and hop dia
 
 **Topological Order Theorem.** Let H be a digraph on G. In Õ(D) rounds every vertex learns an integer in 1..c, where c is the number of strong components, such that the integers are equal exactly on strong components and increase along each arc between two strong components. On a DAG this is a topological numbering of the vertices by 1..n.
 
-**Small Components Theorem.** Let H be a digraph on G whose strong components have at most s vertices. A depth-first search forest of H, and a tree from a given vertex, take Õ(D·s) rounds. With the Directed DFS Theorem of `notes/DIRECTED.md` this gives Õ(D·min(s,D)).
+**Small Components Theorem.** Let H be a digraph on G whose strong components have at most s vertices. A depth-first search forest of H, and a tree from a given vertex, take Õ(D·s) rounds. With the Directed DFS Theorem of `notes/DIRECTED.md` this gives Õ(D·min(s,D)). `notes/GENERAL_DFS.md` claims Õ(D) for all planar digraphs, written later, which would supersede this bound.
 
 All three are deterministic relative to the tree of bags, as in `notes/DIRECTED.md`. On digraphs with cycles this also rests on the identifiers of [1, Lemma 3], stated as randomized and only outlined, or on the rule `selfcomp` in Section 9 of `notes/DIRECTED.md`. On DAGs it does not.
 
@@ -180,7 +180,7 @@ Negative controls, `sim/sec5.py ctl 9023 60`:
 
 ## 8. Open
 
-- Õ(D) for depth-first search of all planar digraphs. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. A separator that bounds strong components only is enough: [11, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [11] and [6] find these on planar digraphs in parallel, and we do not know how to do so in Õ(D).
+- `notes/GENERAL_DFS.md` claims Õ(D) for depth-first search of all planar digraphs. What follows is the state before it. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. A separator that bounds strong components only is enough: [11, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [11] and [6] find these on planar digraphs in parallel. `notes/GENERAL_DFS.md` finds them in Õ(D): two root paths of a spanning out-tree come from the separator, and a binary search on them picks the component.
 - Dominators of a planar DAG.
 
 ## 9. Record of the adversary

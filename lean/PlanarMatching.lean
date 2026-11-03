@@ -4,3 +4,4 @@ import PlanarMatching.Hungarian
 import PlanarMatching.Decomp
 import PlanarMatching.Tutte
 import PlanarMatching.DagSearch
+import PlanarMatching.GeneralSearch
