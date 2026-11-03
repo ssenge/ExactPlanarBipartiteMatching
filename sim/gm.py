@@ -406,7 +406,7 @@ def odd_components(h, own, rem, st):
 
 def certificate(h, own, a, E, B, adj, n, msize, st, rng, p=P, mode='ok'):
     N = set(h.home) - set(B)
-    z = {d: rng.randrange(1, p) for d in N}
+    z = {d: rng.randrange(p) for d in N}
     rhs = {}
     for v in B:
         t = 0
@@ -433,8 +433,9 @@ def certificate(h, own, a, E, B, adj, n, msize, st, rng, p=P, mode='ok'):
     if mode == 'emptyA':
         Ap = set()
     odd = odd_components(h, own, Ap, st)
+    odd_c = odd_components(h, own, Ap | Dp, st)
     st['chk.certificate'] += 1
-    return Dp, Ap, odd
+    return Dp, Ap, odd, odd_c
 
 
 # ---------------------------------------------------------------- families, all general planar
@@ -593,7 +594,7 @@ def run_one(V, E, h, rng, st, p=P, mode='ok', planar=True, flt=False):
     cert = certificate(h, own, a, E, B, adj, n, len(mate) // 2, st, rng, p, mode)
     if cert is None:
         return
-    Dp, Ap, odd = cert
+    Dp, Ap, odd, odd_c = cert
     H_ = G.copy()
     H_.remove_nodes_from(Ap)
     odd_nx = sum(1 for c in nx.connected_components(H_) if len(c) % 2)
@@ -602,7 +603,7 @@ def run_one(V, E, h, rng, st, p=P, mode='ok', planar=True, flt=False):
     # weak duality holds for every set, and the certificate must be tight
     if n - 2 * (len(mate) // 2) < odd_nx - len(Ap):
         st['FAIL.weak_duality'] += 1
-    if n - len(mate) != odd - len(Ap):
+    if n - len(mate) != odd - len(Ap) or odd_c:
         st['FAIL.certificate_not_tight'] += 1
     if nx.is_bipartite(G):
         side = nx.bipartite.color(G)
@@ -639,6 +640,58 @@ def lane(seed, secs, big=False):
         st['max.n'] = max(st['max.n'], len(V))
         run_one(V, E, h, rng, st)
     return dict(st)
+
+
+def tiny_lane(seed, secs):
+    """Section 5 at tiny p, where wrong runs are frequent. A pass of (a) and (b) must be right, against brute force."""
+    rng = random.Random(seed)
+    st = collections.Counter()
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        name, (V, E) = sample(rng, False)
+        if not 2 <= len(V) <= 40:
+            continue
+        root, bags = mm.build(V, E, rng, leaf=rng.choice([2, 4, 6, 10]), closure=rng.choice([False, True, 'two']))
+        h = from_mm(root, bags)
+        p = rng.choice([3, 5, 7, 11, 13, 31, 101, 1009])
+        E = sorted({(min(e), max(e)) for e in E if e[0] != e[1]})
+        G = nx.Graph()
+        G.add_nodes_from(V)
+        G.add_edges_from(E)
+        adj = {v: sorted(G[v]) for v in V}
+        own = assign_edges(h, E, st)
+        a = {e: rng.randrange(1, p) for e in E}
+        _, piv, _ = eliminate(h, own, a, h.root, set(V), st, p)
+        mate = find_matching(h, own, a, set(piv), adj, st, p)
+        for x, y in mate.items():
+            if mate.get(y) != x or (min(x, y), max(x, y)) not in a:
+                st['FAIL.not_a_matching'] += 1
+        if len(mate) != len(piv):
+            st['FAIL.matching_size'] += 1
+        Dp, Ap, odd, odd_c = certificate(h, own, a, E, set(piv), adj, len(V), len(mate) // 2, st, rng, p)
+        nu = len(nx.max_weight_matching(G, maxcardinality=True))
+        Dt = set()
+        for v in V:
+            K = G.copy()
+            K.remove_node(v)
+            if len(nx.max_weight_matching(K, maxcardinality=True)) == nu:
+                Dt.add(v)
+        right = len(mate) == 2 * nu and Dp == Dt
+        pa = len(V) - len(mate) == odd - len(Ap)
+        st['runs'] += 1
+        st['verts'] += len(V)
+        st['tiny.right'] += int(right)
+        st['tiny.pass_a'] += int(pa)
+        st['tiny.pass'] += int(pa and not odd_c)
+        st['tiny.a_only_wrong_D'] += int(pa and Dp != Dt)
+        st['tiny.not_maximum'] += int(len(mate) != 2 * nu)
+        if pa and len(mate) != 2 * nu:
+            st['FAIL.pass_a_not_maximum'] += 1
+        if pa and not odd_c and not right:
+            st['FAIL.pass_wrong'] += 1
+        if right and not (pa and not odd_c):
+            st['FAIL.rejects_truth'] += 1
+    return {k: int(v) for k, v in st.items()}
 
 
 def controls(seed, secs):
@@ -837,7 +890,7 @@ def paths_one(V, arcs, s_, t_, h, rng, st, wrong=False):
     cert = certificate(h4, own, a, Es, set(piv), adj, len(Vq), len(mate) // 2, st, rng, P)
     if cert is None:
         return
-    Dp, Ap, _ = cert
+    Dp, Ap, _, _ = cert
     cover = Ap | {x for x in Vq - Dp - Ap if x % 4 in (0, 2)}
     if any(x not in cover and y not in cover for x, y in Es):
         st['FAIL.sep_not_cover'] += 1
@@ -1005,6 +1058,8 @@ if __name__ == '__main__':
         print(json.dumps(paths_lane(int(a[1]), float(a[2])), indent=0, sort_keys=True))
         r = paths_lane(int(a[1]) + 1, min(10.0, float(a[2])), True)
         print('control, count off by one:', json.dumps({k: v for k, v in r.items() if k.startswith('FAIL') or k == 'runs'}, sort_keys=True))
+    elif a[0] == 'tiny':
+        print(json.dumps(tiny_lane(int(a[1]), float(a[2])), indent=0, sort_keys=True))
     elif a[0] == 'scale':
         for row in scale():
             print(json.dumps(row))
