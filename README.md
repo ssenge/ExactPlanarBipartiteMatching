@@ -13,11 +13,11 @@ The question is how many rounds this takes. Two numbers matter:
 - **n**, the number of vertices;
 - **D**, the hop diameter, the largest number of hops between two vertices.
 
-Õ hides factors polylogarithmic in n. Information must cross the network, so Ω(D) rounds are needed. On general networks the exact algorithms we found depend on the size of the matching, which can be close to n. Planar networks allow more: they have small separators, and D can be far below n.
+Õ hides factors polylogarithmic in n. Information must cross the network, so Ω(D) rounds are needed. On general networks the previous exact algorithms depend on the size of the matching, which can be close to n. Planar networks allow more: they have small separators, and D can be far below n.
 
 ## Main results
 
-| Problem | Rounds here | Best earlier bound we found |
+| Problem | Rounds here | Best previous bound |
 |---|---|---|
 | **Maximum matching, bipartite planar** | **Õ(D²)** | Õ(D⁷), implied by the treewidth bound of [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 | Maximum weight matching, bipartite planar | Õ(D³) | none polynomial in D alone |
@@ -25,7 +25,7 @@ The question is how many rounds this takes. Two numbers matter:
 | **Maximum matching, general planar**, zero error, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
 | Maximum matching, treewidth τ, not necessarily planar or bipartite | Õ(τ³D + τ⁵), randomized | Õ(τ⁴D + τ⁷), bipartite only, [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 
-These rows use only published decompositions and labels, plus the proofs in this repository. The earlier bounds come from literature searches, which are not proof that nothing better exists.
+These rows use only published decompositions and labels, plus the proofs in this repository. Previous bounds are results of other authors, as far as our literature searches show, which is not proof that nothing better exists. Õ(D⁷) is not stated in the cited paper and follows from its treewidth bound, since a planar network has treewidth O(D).
 
 Two bounds improve under the **Label Hypothesis**, an assumption stated in the companion repository [ExactShortestPathsAndFlowsOnPlanarGraphs](https://github.com/ssenge/ExactShortestPathsAndFlowsOnPlanarGraphs). If the hypothesis fails, only these two rows fall away, and the bounds above still stand.
 
