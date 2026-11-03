@@ -43,7 +43,7 @@ For each bag there are Õ(D) values A_X(h). One pipelined convergecast and one b
 
 For a self-contained reading: the lower bound of the lemma is the triangle inequality. For the upper bound, take a best u and a shortest path P to v, and descend from the root while P avoids the separator. By Fact 1 of `notes/MATCHING.md`, P stays in one child, which is on the chains of u and of v, and by (B4) it must meet a separator, at a hub h of a bag X that holds all of P.
 
-*Trees.* With positive lengths each vertex takes a tight in-arc. Zero lengths go away by ℓ′ = (n + 1)ℓ + 1 and d = ⌊d′/(n + 1)⌋.
+*Trees.* With positive lengths each vertex takes a tight in-arc. Zero lengths go away by ℓ′ = (n + 1)ℓ + 1 and φ′ = (n + 1)φ, with d = ⌊d′/(n + 1)⌋.
 
 ## 4. Proof of Corollary 3
 
