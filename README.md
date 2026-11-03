@@ -4,7 +4,7 @@ Distributed algorithms that compute an exact maximum matching of a planar networ
 
 **Paper:** [`paper/main.pdf`](paper/main.pdf), with its source in [`paper/`](paper/).
 
-**Status: every result here is a claim.** The proofs are written, and they have been tested by simulation, partly formalized in Lean, and reviewed by independent AI referees and adversaries, none of which broke a theorem. No human expert has checked them. See [How far to trust this](#how-far-to-trust-this).
+**Status: every result here is a claim.** The proofs are written, tested by simulation and partly formalized in Lean. No human expert has checked them. See [How far to trust this](#how-far-to-trust-this).
 
 ## The problem
 
@@ -76,7 +76,7 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 |---|---|---|
 | Simple directed s-t path (Path Lemma) | Õ(D) | [`notes/MATCHING.md`](notes/MATCHING.md) |
 | Reachability from any set of sources (Multi-Source Lemma) | Õ(D) | same note |
-| Exact distance labels, and distances from a virtual source with any offsets | Õ(D²) | [`notes/EXACT_LABELS.md`](notes/EXACT_LABELS.md), one referee pass, adversary running |
+| Exact distance labels, and distances from a virtual source with any offsets | Õ(D²) | [`notes/EXACT_LABELS.md`](notes/EXACT_LABELS.md) |
 | Out-forest from any set of sources, order of strong components, topological order | Õ(D) | [`notes/DIRECTED.md`](notes/DIRECTED.md) |
 | Depth-first search of a planar DAG, integer topological order | Õ(D) | [`notes/DAG_DFS.md`](notes/DAG_DFS.md) |
 | Depth-first search of any planar digraph | Õ(D) | [`notes/GENERAL_DFS.md`](notes/GENERAL_DFS.md), the weakest proof here: one step is only sketched for many parts |
@@ -88,7 +88,6 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 |---|---|---|
 | Simulation in `sim/` | The logic of the proofs on planar instances, against independent solvers, with negative controls that must fail. 863,003 runs for the bipartite note, no failure | Rounds and messages, the published black boxes, sizes above a few hundred vertices |
 | Lean in `lean/` | The combinatorial core: Lemmas A and C, loop erasure, dual updates, the matrix steps of the elimination, and more. No `sorry`, axioms listed in `lean/axioms.txt` | Planarity, anything about rounds, and the facts taken from published papers |
-| AI referee and AI adversary, for each note | One independent read of the proofs and one attempt to break them, each with its own code. No theorem broke. Their corrections and limits are recorded in each note | They can share blind spots with the AI that helped write the proofs |
 
 Every bound in the tables rests on published black boxes, which were read and not re-proved. Each note ends with what its checks missed.
 
@@ -96,7 +95,7 @@ Every bound in the tables rests on published black boxes, which were read and no
 
 - `paper/`: the paper on matching, as PDF and LaTeX source. It covers the matching results and the tools they use, and not depth-first search or dominators.
 - `notes/`: statements and proofs, one note per topic. Start with [`notes/MATCHING.md`](notes/MATCHING.md).
-- `sim/`: centralized simulations. `sim/REPORT.md` and `sim/REPORT_GENERAL.md` hold the results, and `sim/review/` holds the independent code of referees and adversaries.
+- `sim/`: centralized simulations. `sim/REPORT.md` and `sim/REPORT_GENERAL.md` hold the results, and `sim/review/` holds further test code.
 - `lean/`: the formalized core, Lean 4 with Mathlib at the pinned revision. `lake build` needs Mathlib, so run `lake exe cache get` first.
 
 ## Reproduce
@@ -116,4 +115,4 @@ The same scripts take `ctl <seed> <seconds>` for their negative controls, which 
 
 ## Use of AI
 
-The proofs, code and notes were developed with the help of Claude Opus 5.5 under the direction of the author, Sebastian Senge. The referee and adversary passes were run by separate instances of the same model.
+The proofs, code and notes were developed and reviewed with the help of Claude Opus 5.5 under the direction of the author, Sebastian Senge.

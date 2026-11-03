@@ -118,8 +118,7 @@ vertices of a separator one at a time. With one exact SSSP of~\cite[Lemma 4]{P20
 bipartite matching, also with weights, in $\Ot(D^3)$ rounds. A perfect matching of a bipartite planar network, or the
 report that none exists, takes $\Ot(D^2)$ rounds with high probability through the dual distances of~\cite{ADPW25} and the
 demand routing of~\cite{MN95}. Maximum matching does not follow from that route, since free vertices would need a
-super-source, which is not planar. Our literature searches found no earlier exact bound for general planar networks that
-is polynomial in $D$ alone. This is not proof that none exists.
+super-source, which is not planar. To our knowledge there is no earlier exact bound for general planar networks that is polynomial in $D$ alone.
 
 A lower bound of $\Omega(D)$ holds for maximum matching, already on paths. Take a path with an even number of vertices and
 shift it by one vertex. A vertex in the middle sees the same neighbourhood in both for about $D/2$ rounds, while its partner
@@ -148,7 +147,7 @@ Simple directed $st$-path, planar & $\Ot(D)$ & $\Ot(D^2)$, from exact directed S
 \bottomrule
 \end{tabular}
 \caption{Bounds for exact problems. Previous bounds are results of other authors or direct consequences of them,
-as far as our literature searches show. ``Implied'' means that the bound is not stated there: $\Ot(D^7)$ follows from the
+to our knowledge. ``Implied'' means that the bound is not stated there: $\Ot(D^7)$ follows from the
 treewidth bound, since a planar network has treewidth $O(D)$, and $\Ot(D^3)$ from the scheme of~\cite{LT80} with one
 exact SSSP per insertion. The algorithms for general planar networks and for treewidth $\tau$, and the one
 of~\cite{IKY23}, use randomness beyond the decomposition.}
@@ -265,7 +264,7 @@ indices as the boundary has, so each bag moves $\Ot(D^2)$ words. \AlgMates{} the
 down, with two solves per hub. Since a bag holds a factorization, one solve takes $\Ot(D)$ rounds. The check of the \ThmCert{} runs in the bags and
 removes all error from the output.
 
-\subsection{Verification and status}
+\subsection{Verification}
 
 The theorems are proved on paper. The black boxes of~\cite{LP19,P20,IKNS22} were read and not proved
 again, and the proofs of~\cite[Lemmas 10 to 13]{P20} are not in the conference text. The Lean
@@ -276,8 +275,7 @@ the decomposition, knowledge of the vertices or any round count.
 
 There is no simulation of CONGEST. The scripts of Section~\ref{sec:numerics} run the logic centrally
 on instances checked for planarity, against independent solvers, with negative controls. They check
-words per bag, not rounds. Separate AI referees and adversarial AI agents, each with its own code, reviewed the notes behind this paper, and a referee also read this text. They
-found no counterexample to a theorem, and their findings are recorded at the end of each note in the repository. The \LemLabels{} and the \ThmOff{} have so far had only that referee. No human expert has checked these proofs yet.
+words per bag, not rounds. 
 
 \section{Preliminaries}\label{sec:prelim}
 
