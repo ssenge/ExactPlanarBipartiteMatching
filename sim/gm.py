@@ -9,6 +9,7 @@ python3 -I gm.py region SEED SECS   region bags of the sibling repository, with 
 python3 -I gm.py scale              words on grids with diagonals, on region bags
 python3 -I gm.py tw SEED SECS       Section 6: low treewidth, many children per bag, with the filter
 python3 -I gm.py twctl SEED SECS    controls of the filter
+python3 -I gm.py paths SEED SECS    vertex-disjoint s-t paths in digraphs, with a control
 """
 import collections, json, os, random, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -603,6 +604,15 @@ def run_one(V, E, h, rng, st, p=P, mode='ok', planar=True, flt=False):
         st['FAIL.weak_duality'] += 1
     if n - len(mate) != odd - len(Ap):
         st['FAIL.certificate_not_tight'] += 1
+    if nx.is_bipartite(G):
+        side = nx.bipartite.color(G)
+        Cc = set(V) - Dp - Ap
+        cover = Ap | {v for v in Cc if side[v] == 0}
+        if any(u not in cover and v not in cover for u, v in E):
+            st['FAIL.konig_not_cover'] += 1
+        if len(cover) != nu:
+            st['FAIL.konig_size'] += 1
+        st['chk.konig'] += 1
     if n <= 40:
         Dtrue = set()
         for v in V:
@@ -748,6 +758,104 @@ def tw_lane(seed, secs, mode='ok'):
     return {k: int(v) for k, v in st.items()}
 
 
+# ---------------------------------------------------------------- disjoint paths, Section 6
+def quad(h):
+    """Each vertex hosts four: out 4v, in 4v+1, a 4v+2, z 4v+3. Bags, separators and the tree stay."""
+    f = lambda vs: {4 * v + i for v in vs for i in range(4)}
+    return H({b: f(x) for b, x in h.V.items()}, {b: f(x) for b, x in h.S.items()}, h.kids, h.parent, h.depth, h.root)
+
+
+def paths_one(V, arcs, s_, t_, h, rng, st, wrong=False):
+    Vp = set(V) - {s_, t_}
+    E = {(4 * v, 4 * v + 1) for v in Vp}
+    for u, v in arcs:
+        if u in Vp and v in Vp:
+            E.add((4 * u, 4 * v + 1))
+        elif u == s_ and v in Vp:
+            E.add((4 * v + 1, 4 * v + 2))
+        elif v == t_ and u in Vp:
+            E.add((4 * u, 4 * u + 3))
+    Es = sorted({(min(e), max(e)) for e in E})
+    # every copy is a vertex of the hierarchy; isolated ones have no effect on the matching
+    h4 = quad(h)
+    Vq = {4 * v + i for v in V for i in range(4)}
+    G = nx.Graph()
+    G.add_nodes_from(Vq)
+    G.add_edges_from(Es)
+    a = {e: rng.randrange(1, P) for e in Es}
+    own = assign_edges(h4, Es, st)
+    adj = {v: sorted(G[v]) for v in Vq}
+    _, piv, _ = eliminate(h4, own, a, h4.root, Vq, st, P, 'ok', True)
+    mate = find_matching(h4, own, a, set(piv), adj, st, P)
+    for x, y in mate.items():
+        if mate.get(y) != x or (min(x, y), max(x, y)) not in a:
+            st['FAIL.not_a_matching'] += 1
+    kappa = len(mate) // 2 - len(Vp) - (1 if wrong else 0)
+    # independent value: unit vertex capacities on a split digraph
+    D = nx.DiGraph()
+    for v in Vp:
+        D.add_edge((v, 0), (v, 1), capacity=1)
+    for u, v in arcs:
+        if u == s_ and v in Vp:
+            D.add_edge('s', (v, 0), capacity=1)
+        elif v == t_ and u in Vp:
+            D.add_edge((u, 1), 't', capacity=1)
+        elif u in Vp and v in Vp:
+            D.add_edge((u, 1), (v, 0), capacity=1)
+    D.add_node('s')
+    D.add_node('t')
+    val = nx.maximum_flow_value(D, 's', 't')
+    st['chk.paths'] += 1
+    st['max.kappa'] = max(st['max.kappa'], val)
+    if kappa != val:
+        st['FAIL.paths_value'] += 1
+    # arcs of the matching form paths and cycles; a path counts if it uses a at its start and z at its end
+    succ, pred = {}, {}
+    for u in Vp:
+        y = mate.get(4 * u)
+        if y is not None and y % 4 == 1 and y // 4 != u:
+            succ[u], pred[y // 4] = y // 4, u
+    real, none_ = 0, 0
+    for x in Vp:
+        if x in pred:
+            continue
+        y = x
+        while y in succ:
+            y = succ[y]
+        if x == y and mate.get(4 * x) == 4 * x + 1:
+            continue                                    # self edge
+        ha, hz = mate.get(4 * x + 1) == 4 * x + 2, mate.get(4 * y) == 4 * y + 3
+        real += int(ha and hz)
+        none_ += int(not ha and not hz)
+    if real != val:
+        st['FAIL.paths_real'] += 1
+    if none_:
+        st['FAIL.paths_with_no_end'] += 1
+
+
+def paths_lane(seed, secs, wrong=False):
+    rng = random.Random(seed)
+    st = collections.Counter()
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        name, (V, E) = sample_tw(rng) if rng.random() < 0.5 else sample(rng, False)
+        if len(V) < 3:
+            continue
+        h = build_tw(V, E, rng, rng.choice([1, 2, 4]), rng.choice([1, 2, 3, 6]))
+        arcs = []
+        p_ = rng.choice([0.5, 0.8, 1.0])
+        for u, v in E:
+            if rng.random() < p_:
+                arcs.append((u, v))
+            if rng.random() < p_:
+                arcs.append((v, u))
+        s_, t_ = rng.sample(sorted(V), 2)
+        paths_one(V, arcs, s_, t_, h, rng, st, wrong)
+        st['runs'] += 1
+        st['max.n'] = max(st['max.n'], len(V))
+    return {k: int(v) for k, v in st.items()}
+
+
 # ---------------------------------------------------------------- region bags
 def region_setup():
     rp = os.environ.get('SSSP_REPO') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'ExactShortestPathsAndFlowsOnPlanarGraphs')
@@ -865,6 +973,10 @@ if __name__ == '__main__':
     elif a[0] == 'twctl':
         r = tw_lane(int(a[1]), float(a[2]), 'fltbad')
         print(json.dumps({k: v for k, v in r.items() if k.startswith('FAIL') or k == 'runs'}, sort_keys=True))
+    elif a[0] == 'paths':
+        print(json.dumps(paths_lane(int(a[1]), float(a[2])), indent=0, sort_keys=True))
+        r = paths_lane(int(a[1]) + 1, min(10.0, float(a[2])), True)
+        print('control, count off by one:', json.dumps({k: v for k, v in r.items() if k.startswith('FAIL') or k == 'runs'}, sort_keys=True))
     elif a[0] == 'scale':
         for row in scale():
             print(json.dumps(row))

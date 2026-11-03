@@ -12,6 +12,8 @@ The model is CONGEST on a connected network G with n vertices and hop diameter D
 
 **Treewidth Theorem.** Let G be a network of treewidth τ, not necessarily planar. With high probability, in Õ(τ³D + τ⁵) rounds every vertex learns its mate in a maximum matching of G and its Gallai-Edmonds set.
 
+**Corollaries.** In the bound of the two theorems, a minimum vertex cover and a maximum independent set of a bipartite network, and for a digraph with vertices s, t the maximum number κ of paths from s to t that are vertex disjoint except at s and t, with κ such paths, and a minimum set of vertices that separates s from t if there is no arc from s to t.
+
 **Linear Algebra Lemma.** Let a matrix over F_p, p = n^{O(1)}, be symmetric or alternating, and have nonzero entries only on the diagonal and on edges of G, with each entry known to its row and column vertices. In Õ(D²) rounds the network computes its rank, a set B of size equal to the rank with nonsingular principal submatrix, and a factorization stored at the centres of the bags, after which each system on B is solved in Õ(D) rounds, every vertex learning its coordinate.
 
 **Context.** For exact matching without the bipartite restriction the bounds we found depend on the matching size: Õ(s\*) rounds [2], randomized, and Õ(s\*^{3/2}) before that [1]. For treewidth τ, [4, Theorem 4] gives Õ(τ⁴D + τ⁷) for bipartite graphs, and states that the idea behind it is incorrect for general graphs, since a shortest 2-coloured walk need not be simple. The Treewidth Theorem improves this bound by a factor τ in its first term and τ² in its second, on all graphs. For D well below the square root of s\*, the General Matching Theorem improves on [2] on planar networks. For bipartite planar networks, the Matching Theorem in `notes/MATCHING.md` has the same bound and is deterministic relative to the decomposition, while this note is randomized and simpler. Lower bound: two even paths, as in `notes/MATCHING.md`, give Ω(D). Four literature searches found no earlier exact bound for general planar networks that is polynomial in D alone, and no improvement on [4, Theorem 4]; that is not proof that none exists.
@@ -146,9 +148,19 @@ Summing over O(log n) depths proves the Treewidth Theorem. Probabilities: Fact 2
 
 The width t = O(τ² log n) of (T1) is what costs: a decomposition of width Õ(τ) in the same rounds would give Õ(τ²D + τ³).
 
+## 6.1 Corollaries
+
+**König.** Let G be bipartite with sides L and L′, and take D′, A′, C′ of Section 5. If these are the Gallai-Edmonds sets, then A′ ∪ (L ∩ C′) is a vertex cover of size ν(G). Components of G[D(G)] are factor-critical and bipartite, so single vertices. So D(G) is independent with neighbours in A(G), and an edge inside C(G) has an end in L. Further n − 2ν = |D| − |A| gives ν = |A| + |C|/2, and C(G) has a perfect matching, so |L ∩ C| = |C|/2. Each vertex decides locally. A failed cover check is detected by one aggregation.
+
+**Disjoint paths.** Let V′ = V ∖ {s,t}. Each v ∈ V′ hosts the vertices v⁻, v⁺, and a_v if s → v is an arc, and z_v if v → t is an arc. Let H have the edges v⁺v⁻ for each v, a_vv⁻, v⁺z_v, and u⁺v⁻ for each arc u → v in V′. A vertex x of G, in a bag or a separator, stands for all its hosted vertices, so each bag at most quadruples and the proofs above apply: edges of H are local or lie on one edge of G. Then ν(H) = |V′| + κ. Indeed the self edges v⁺v⁻ are a matching, and a path v_1, ..., v_ℓ from N⁺(s) to N⁻(t) replaces ℓ self edges by ℓ + 1 edges.
+
+Conversely, let M be a maximum matching of H. Its edges u⁺v⁻ form vertex disjoint paths and cycles on V′. Measured against the self edges, a path gains 1 if it uses a at its start and z at its end, gains 0 if it uses one of them, and loses 1 if it uses neither, which a maximum matching excludes. So exactly κ paths use both. The vertices of one path learn which kind it is by one aggregation over a vertex disjoint family of connected subgraphs: Õ(τD) by [4, Lemma 8], and Õ(D) on planar networks by the bags. The other paths and the cycles are ignored.
+
+If there is no arc from s to t, then by König on H the vertices v with both v⁺ and v⁻ in the cover form a set separating s from t, as is standard for unit vertex capacities. Its size is κ, since a vertex with neither copy in the cover cannot lie on a path from s to t, and a vertex with exactly one copy can be charged to a self edge of the matching.
+
 ## 7. Checks
 
-`sim/gm.py` builds the hierarchy, runs the elimination, the solves, the search and the certificate by message passing bag by bag, and compares against an independent blossom algorithm, an independent rank of the whole matrix, and, for small n, brute-force D(G). `sim/gm.py region` runs on the region bags of [6] and checks the part of (H3) and (H5) that the round count uses. Results are in `sim/REPORT_GENERAL.md`. Negative controls in `sim/gm.py ctl`. `sim/gm.py tw` runs Section 6 on general graphs of low treewidth, with the filter, and `sim/gm.py twctl` is its control.
+`sim/gm.py` builds the hierarchy, runs the elimination, the solves, the search and the certificate by message passing bag by bag, and compares against an independent blossom algorithm, an independent rank of the whole matrix, and, for small n, brute-force D(G). `sim/gm.py region` runs on the region bags of [6] and checks the part of (H3) and (H5) that the round count uses. Results are in `sim/REPORT_GENERAL.md`. Negative controls in `sim/gm.py ctl`. `sim/gm.py tw` runs Section 6 on general graphs of low treewidth, with the filter, and `sim/gm.py twctl` is its control. `sim/gm.py paths` runs the disjoint paths against an independent maximum flow, and every run checks König on bipartite instances. The separating set of Section 6.1 is not run.
 
 ## 8. Not covered by the checks
 
