@@ -98,17 +98,34 @@ For any digraph, run the algorithm on the condensation, which is a planar DAG, a
 
 `sim/dagdfs.py` runs the algorithm on DAGs made by orienting planar graphs along random, breadth-first and depth-first vertex orders, reversed or not, on grid DAGs, and on digraphs with cycles from `sim/dirs.py`, each checked for planarity. Out-trees are chosen with varying shape, since the algorithm must work with any of them. Each result is checked by the replay of a real search, with the coverage of all reached vertices, and reversed post-order against every arc. Every separator is checked against 3/4 by its actual components, every class against Lemma 3, every part of τ for being contiguous, every level against the count of passes, and a sample of classes by the binary search of Lemma 4 against a direct computation. The condensations of digraphs with cycles are checked for planarity and run as DAGs.
 
-First short run, `sim/dagdfs.py 3 40`, before the last addition of the condensation check: 33,093 runs, of which 28,988 were DAGs, with 21,958 separators, 20,302 parts of τ, 130,738 classes and n up to 209. No failure. At most 5 levels, and at most 25 passes per level on digraphs with cycles. Largest component after a separator: 68%.
+Two long lanes, no failure:
 
-Negative controls, `sim/dagdfs.py ctl 4 15`. Each breaks one rule, and each is detected:
+| | `sim/dagdfs.py 9001 700` | `sim/dagdfs.py 9002 700 big` |
+|---|---|---|
+| Runs | 518,330 | 234,629 |
+| DAGs | 454,260 | 203,921 |
+| Replays of a real search | 550,315 | 249,924 |
+| Condensations run as DAGs | 31,985 | 15,295 |
+| Separators against 3/4 | 353,513 | 287,918 |
+| Classes against Lemma 3 | 2,095,011 | 1,894,339 |
+| Parts of τ for being contiguous | 327,534 | 283,806 |
+| Binary searches against a direct computation | 70,640 | 57,687 |
+| Largest n | 219 | 349 |
+| Largest number of levels | 5 | 6 |
+| Largest number of passes per level, digraphs with cycles | 40 | 58 |
+| Largest component after a separator | 71% | 69% |
+
+All DAG runs stayed within two passes per level. The passes on digraphs with cycles stayed below the bound of the Small Components Theorem.
+
+Negative controls, `sim/dagdfs.py ctl 9003 60`. Each breaks one rule, and each is detected:
 
 | Control | Rule broken | Runs | What fired |
 |---|---|---|---|
-| `shallow` | shallow vertices of π come first | 5,127 | replay 2,253 |
-| `headfirst` | heads before the next vertex of π | 5,599 | replay 2,424 |
-| `revhead` | heads in the wrong order | 5,670 | replay 1,043 |
-| `onepath` | no step 5 | 4,864 | class too big 1,543, levels 15, replay 9 |
-| `firsthit` | the entry of greatest index in place of least | 5,955 | more than 2 passes on a DAG 272 |
+| `shallow` | shallow vertices of π come first | 20,453 | replay 9,281 |
+| `headfirst` | heads before the next vertex of π | 21,469 | replay 9,417 |
+| `revhead` | heads in the wrong order | 20,992 | replay 3,806 |
+| `onepath` | no step 5 | 16,835 | class too big 5,260, levels 59, replay 27 |
+| `firsthit` | the entry of greatest index in place of least | 19,593 | more than 2 passes on a DAG 823 |
 
 `sim/dagdfs.py scale`, on instances up to n = 6,400, gives at most 5 levels and 8 passes on grid DAGs, and at most 4 levels and 7 passes on stacked triangulations.
 

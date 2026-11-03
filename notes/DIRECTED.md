@@ -1,6 +1,6 @@
 # Directed search in planar networks
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dirs.py`. Not yet refereed and not yet attacked, and no human has checked it. Importance: solid if it survives, since we found no earlier bound polynomial in D for depth-first search on digraphs.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dirs.py`. Attacked by an independent AI pass on 3 Nov 2026: no theorem failed, and the corrections are listed in Section 9. The referee pass is still open, and no human has checked it. Importance: solid if it survives, since we found no earlier bound polynomial in D for depth-first search on digraphs.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has a set of arcs on the edges of G, where an edge may carry no arc, one arc, or one arc in each direction. Paths and reachability are always in the digraph, and D is always the diameter of the undirected G. The tree of bags, (B1) to (B6) and Fact 1 are those of `notes/MATCHING.md`, Section 2.
 
@@ -17,17 +17,17 @@ All three are deterministic relative to the tree of bags, and so deterministic b
 **Corollaries.**
 
 - *Paths.* Given a set Z of targets, in Õ(D) rounds every vertex learns whether it lies on the tree path to a member of Z. With A = {s} and Z = {t} this reproves the Path Lemma of `notes/MATCHING.md` with no loop erasure.
-- *Integer order.* On a DAG, the reversed post-order numbers of a depth-first search forest are integers in topological order, in Õ(D²) rounds. Order the roots by pre-order in a BFS tree of G, so that prefix sums of tree sizes take O(D) rounds. For an arc (u,v), the vertex v is not an ancestor of u and not right of u, so it finishes first. The labels of the Order Theorem are not integers, and we do not claim integer ranks in Õ(D).
+- *Integer order.* On a DAG, the reversed post-order numbers of a depth-first search forest are integers in topological order, in Õ(D²) rounds. Order the roots by pre-order in a BFS tree of G, so that prefix sums of tree sizes take O(D) rounds. This order must hold from the first step of the search, since Lemma 7 and (T2) use it: renumbering the roots afterwards breaks the property. For an arc (u,v), the vertex v is not an ancestor of u and not right of u, so it finishes first. The labels of the Order Theorem are not integers. `notes/DAG_DFS.md` gives integers in Õ(D).
 
-**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. For digraphs, [2] gives reachability and identifiers of strong components in Õ(D), and [6] states that these are the only known nontrivial problems on planar digraphs with an Õ(D) bound, to the best of its authors' knowledge. Two literature searches found no out-forest, no order of the condensation and no depth-first search for planar digraphs in CONGEST with a bound polynomial in D, which is not proof that none exists. The combinatorics of Section 5 is not new: the sets of vertices with a common owner appear in the parallel algorithms for planar digraphs, for instance [7, Section 7], going back to [8]. The new parts would be the recursion on labels in Sections 3 and 4, and the CONGEST bounds. Ω(D) is immediate for all three, since a directed path with one arc reversed at the far end changes the answer at the other end.
+**Context.** Depth-first search of an undirected planar network takes Õ(D) rounds [3], deterministically by [4]. For digraphs, [2] gives reachability and identifiers of strong components in Õ(D), and [6] states that these are the only known nontrivial problems on planar digraphs with an Õ(D) bound, to the best of its authors' knowledge. Two literature searches found no out-forest, no order of the condensation and no depth-first search for planar digraphs in CONGEST with a bound polynomial in D, which is not proof that none exists. The combinatorics of Section 5 is not new: the sets of vertices with a common owner appear in the parallel algorithms for planar digraphs, for instance [7, Section 7], going back to [8]. The new parts would be the recursion on labels in Sections 3 and 4, and the CONGEST bounds. Ω(D) is immediate for the forest and the search, since a directed path with one arc reversed at the far end changes the answer at the other end. For the Order Theorem compare a directed cycle with the same cycle with one arc reversed: equal labels become strictly increasing ones, and this has to show at a pair of vertices far from the arc.
 
 ## 2. Tools
 
-**(T1) Labels on any digraph.** To keep one tree of bags for all digraphs, replace every edge a−b of G by two parallel paths a−w−b and a−w′−b, with w and w′ simulated by an endpoint. Orient a→w→b if the arc (a,b) is present, and a→w←b otherwise, and likewise with w′ for (b,a). A vertex w with two in-arcs is a sink, so it plays no part in paths between vertices of G. The underlying network is planar with hop diameter at most 2D and never changes, so its tree of bags is computed once, as in `notes/MATCHING.md`, Section 4. Then (B5) and (B6) hold for any digraph after one run of [2, Lemma 16], in Õ(D) rounds. Sections 3 to 5 run on this network. At the end the vertices w are dropped, and a parent w is replaced by its own parent: an arc (a,b) of H is the path a→w→b, and a search that visits a sink w as a leaf loses nothing.
+**(T1) Labels on any digraph.** The tree of bags is computed once, on the undirected G, and never changes. [2, Lemma 16] is stated for a directed planar graph. Its proof uses the directions only through directed paths drawn in a fixed embedded bag, [2, Lemmas 10 to 13], and such a path is a curve in the bag whichever edges carry arcs. So the proof covers a digraph on any subset of the edges, with one arc or two on an edge. Then (B5) and (B6) hold for any digraph on G after one run, in Õ(D) rounds. This is a reading of the proof of [2], not its statement, and we need it: the child digraphs of Sections 3 and 4, the kept arcs of Lemma 7 and the residual digraph leave edges with no arc, on any network. `sim/monge.py` spot checks the interval property behind the compression on such digraphs.
 
-The run goes bottom up over the bags. So if each bag Y of one level has its own digraph D_Y on the edges of Y, then one run over the subtrees below these bags gives (B5) and (B6) below Y for D_Y. Bags of one level share edges at most twice by (B2), so this also takes Õ(D) rounds. Likewise the Multi-Source Lemma of `notes/MATCHING.md` runs in every subtree at once.
+The run goes bottom up over the bags. So if each bag Y of one level has its own digraph D_Y on the edges of Y, then one run over the subtrees below these bags gives (B5) and (B6) below Y for D_Y. Bags of one level share edges at most twice by (B2), so this also takes Õ(D) rounds. Likewise the Multi-Source Lemma of `notes/MATCHING.md` runs in every subtree at once, relative to the subtree: its root is the child. The chain of (B6) stops at the child, so a source in a separator above is known by (B5) and not from the label.
 
-**(T2) Trees.** A forest of arbitrary depth is rooted, and every vertex learns a sum over its subtree, with Õ(1) part-wise aggregations [5, Lemma 8], so in Õ(D) rounds on planar networks [5, Lemma 7]. Sums over ancestors take the same fragment merging: when a fragment is merged below a vertex p, the current value of p goes to the whole fragment by one aggregation. So pre-order and post-order numbers of an ordered forest take Õ(D) rounds: subtree sizes, then for a child c the sum 1 + (sizes of the siblings before c) along the root path.
+**(T2) Trees.** A forest of arbitrary depth is rooted, and every vertex learns a sum over its subtree, with Õ(1) part-wise aggregations [5, Lemma 8], so in Õ(D) rounds on planar networks [5, Lemma 7]. Sums over ancestors take the same fragment merging: when a fragment is merged below a vertex p, the current value of p goes to the whole fragment by one aggregation. So pre-order and post-order numbers of an ordered forest take Õ(D) rounds. Compute subtree sizes, and let e(v) be the sum, over the root path of v, of the sizes of the earlier siblings, with earlier roots as siblings of a root. Numbering from 0, pre(v) = e(v) + depth(v) and post(v) = e(v) + size(v) − 1.
 
 **Fact 1** says that a path in a bag, cut at its vertices in the separator, has all its pieces in children. A vertex off the separator lies on exactly one child by (B3).
 
@@ -111,7 +111,7 @@ For a white x let owner(x) be the vertex of T, earliest in post-order, that reac
 
 **Lemma 7 (owners by search).** All white vertices learn their owners in Õ(D) rounds.
 
-*Proof.* Let the post-order numbers have b = O(log n) bits, using root identifiers before them in a forest. Determine the bits of post(owner(x)) from the top. Suppose that all x know the first i bits. Keep the arcs (u,x) with x white and either u in T with the first i bits of post(u) equal to those of x, or u white with the same first i bits as x. Run the Multi-Source Lemma from those u in T whose next bit is 0, and let the next bit of x be 0 if and only if x is reached. If owner(x) has next bit 0, then by Lemma 6 the path from the owner has all its vertices in the class of x, so it is kept and x is reached. Conversely if x is reached from u with next bit 0, then post(owner(x)) ≤ post(u), so the next bit of the owner is 0, since the first i bits agree. ∎
+*Proof.* Let the post-order numbers have b = O(log n) bits, in the order of the roots in a forest. Determine the bits of post(owner(x)) from the top. Suppose that all x know the first i bits. Keep the arcs (u,x) with x white and either u in T with the first i bits of post(u) equal to those of x, or u white with the same first i bits as x. Run the Multi-Source Lemma from those u in T whose next bit is 0, and let the next bit of x be 0 if and only if x is reached. If owner(x) has next bit 0, then by Lemma 6 the path from the owner has all its vertices in the class of x, so it is kept and x is reached. Conversely if x is reached from u with next bit 0, then post(owner(x)) ≤ post(u), so the next bit of the owner is 0, since the first i bits agree. ∎
 
 The *residual digraph* consists of the arcs (u,x) with x white and either u = owner(x) or u white with owner(u) = owner(x). By Lemma 6 every white x is reached in it from owner(x), and only from it.
 
@@ -129,11 +129,11 @@ Several paths can be added at once if no vertex of one reaches a vertex of anoth
 
 *Proof.* By induction the search visits the vertices in pre-order. When it scans the other arcs of u it has visited the subtree of u and everything before u in pre-order. So the head of an arc that is still unvisited would be right of u, against (C). ∎
 
-**The algorithm.** Start with T = {r}, which satisfies (C). For a forest take one root of each source component of the condensation, found with the identifiers of [2] and one aggregation per component. These roots do not reach each other, so (C) holds in any order.
+**The algorithm.** Start with T = {r}, which satisfies (C). For a forest take one root of each source component of the condensation, found with the identifiers of [2] and one aggregation per component. These roots do not reach each other, so (C) holds in any order, which is fixed before the first step.
 
 Process the levels of the tree of bags from the top. At level L repeat the following *step* until no bag of level L has a white vertex in its separator. Compute pre-order and post-order numbers by (T2), owners by Lemma 7 and the residual digraph. Run the Out-Forest Theorem on the residual digraph with A = T. In each bag Y of level L with a white vertex in sep(Y), pick the white vertex h_Y with least identifier, by T_Y. Mark the tree paths to all h_Y by (T2) and add them to T as in Lemma 8.
 
-*Correctness.* By induction, at level L all vertices in separators of higher bags that are reached are in T. So a white vertex lies in no such separator, hence by (B3) on exactly one bag of level L, and by (B2) an arc between white vertices stays in this bag. A white vertex reaches only white vertices, so paths of different bags do not reach each other through vertices outside T, and Lemma 8 applies. Each step puts one more vertex of sep(Y) into T for every Y that still has a white one, so level L takes at most max |sep(Y)| = O(D log n) steps. A leaf has sep(Y) = V(Y) by (B4), so at the end all reached vertices are in T, and Lemma 9 applies.
+*Correctness.* By induction, at level L all vertices in separators of higher bags that are reached are in T. So a white vertex lies in no such separator, hence by (B3) on exactly one bag of level L, and by (B2) an arc between white vertices stays in this bag. Through vertices outside T a white vertex reaches only white vertices, so paths of different bags do not reach each other through vertices outside T, and Lemma 8 applies. Each step puts one more vertex of sep(Y) into T for every Y that still has a white one, so level L takes at most max |sep(Y)| = O(D log n) steps. A leaf has sep(Y) = V(Y) by (B4), so at the end all reached vertices are in T, and Lemma 9 applies.
 
 **Rounds.** One step is Õ(D): (T2), O(log n) runs of the Multi-Source Lemma on a digraph, the Out-Forest Theorem, and one marking. There are O(D log² n) steps. The numbers at the end are (T2) once. ∎
 
@@ -141,7 +141,18 @@ Process the levels of the tree of bags from the top. At level L repeat the follo
 
 `sim/dirs.py` runs all three on the decompositions of `sim/mm.py`, on directed families that include snakes, spirals, grid DAGs, Manhattan grids, random orientations, and graphs with arcs in both directions, each checked for planarity. Forests are compared with independent reachability, and checked for cycles. Orders are compared with an independent condensation on every arc. Depth-first search forests are checked by a replay of a real search, and (C) is checked after every step.
 
-First short run, `sim/dirs.py 3 45`: 10,592 runs, of which 5,433 were DAGs, with 113,649 checks of (C), 1,106,934 bags for forests, n up to 198 and depth up to 21. No failure.
+Two long lanes, no failure:
+
+| | `sim/dirs.py 8001 900` | `sim/dirs.py 8002 900 big` |
+|---|---|---|
+| Runs | 223,715 | 65,744 |
+| DAGs | 113,411 | 31,247 |
+| Checks of (C) | 2,400,658 | 1,475,889 |
+| Bags for forests | 25,475,446 | 27,123,811 |
+| Largest n | 219 | 349 |
+| Largest depth of the tree of bags | 21 | 28 |
+| Largest number of steps | 191 | 323 |
+| Largest label ℓ of Section 3 | 66 | 64 |
 
 Negative controls, `sim/dirs.py ctl 4 8`. Each breaks one rule of the proofs, and each is detected:
 
@@ -163,11 +174,37 @@ Negative controls, `sim/dirs.py ctl 4 8`. Each breaks one rule of the proofs, an
 - (B1) to (B6), (T1) and (T2) are read from [1], [2] and [5], and from `notes/MATCHING.md`. The decompositions of `sim/mm.py` are not those of [2]: their separators are best effort, and when no separator makes progress a large leaf is used.
 - The step count is checked only against the separators of those decompositions, and sizes above a few hundred vertices are not run.
 - Lemma 9 is checked by replay, and Lemmas 6 and 8 through (C), but none of this section is in Lean.
+- `sim/dirs.py` finds owners by brute force. It does not run the binary search of Lemma 7 or the Out-Forest Theorem on the residual digraph. The adversary's code in Section 9 does.
+- The identifiers of strong components rest on [2, Lemma 3], stated as randomized and only outlined in the DISC text, and named as derandomized in [5, Section 6]. Section 9 has a rule that avoids them.
+- `sim/mm.py` does not keep (B2) and (B3): in 3,000 runs of the adversary, 1,360 had a hub on more than 3 children, up to 47, and 757 had an edge in more than 2 bags of one level, up to 310. So the lanes are not a test of the bounds that rest on those two properties.
+- The proofs of [2], Lemmas 3, 9 to 13 and 16, beyond the spot check of `sim/monge.py`. For Lemma 13 with i1 = i2, the literal definition of active gives no compression: the check sees up to 7 runs on one face with no cut. The cut recursion of [2, Lemmas 10 and 11] is needed, at the same cost per vertex up to polylogarithmic factors.
 
 ## 8. Open
 
 - Õ(D) for depth-first search on digraphs. Two tree paths of an out-forest are a balanced separator by [5, Theorem 3], but a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. A path separator as in [7] would be enough.
 - Dominators of a planar digraph. Õ(D) on DAGs and integer ranks in topological order are in `notes/DAG_DFS.md`, which came after this note.
+
+## 9. Record of the adversary
+
+An independent AI adversary tried to break Sections 2 to 5 on 3 Nov 2026, with its own engine in C++ and Python. It found no failure of any lemma or theorem. Every check passed with the rules as written, and every negative control fired. Its largest lanes:
+
+- Every tree of bags on connected planar graphs with n ≤ 4 and m ≤ 5, and with n = 5 and m = 4, with all digraphs, all sets A and all roots: 119,827 trees, 84,462,550 digraph runs, 1,531,210,388 forests, 433,549,776 searches and 704,282,412 checks of (C).
+- Lemmas 6, 8 and 9 on all digraphs with n ≤ 4, and 40,000 of the 1,048,576 digraphs with n = 5: 66,540,452 forests and 7,603,611 paths.
+- The literal bit search of Lemma 7: 115,867 random runs, with 4,043,547 runs of the Multi-Source Lemma and 1,682,229 checks of owners.
+- On region bags with up to 369 network vertices and D up to 32: 2,138 runs with at most 77 steps. The step bound for a level was reached and never exceeded.
+
+It reported these flaws in the wording, all corrected above:
+
+- (T1) was stated by subdivision, but the child digraphs, the kept arcs of Lemma 7 and the residual digraph leave network edges with no arc, which that form never produces. Its hop diameter was also 2D + 2, not 2D. The smallest instance is one edge 0−1 with the arc 0→1, on the network 0, 1, 2, 3, with the root separator {1,2} and A = {0}. So [2, Lemma 16] is now used as a reading of its proof. On digraphs with absent arcs, 2,523,362 checks of the interval property saw at most one run, and a control with 3 non-planar arcs fired 62 times.
+- The Integer order corollary needs the root order fixed before the first step. With the arcs 0→1 and 2→1, the roots [0,2] and a later renumbering as [2,0] violate the arc 2→1. Fixed from the start, 0 of 9,796 DAG runs failed, and renumbered afterwards, 4,367 failed.
+- Ω(D) did not apply to the Order Theorem as argued: the labels 0,1,2,3 and 0,1,3,2 are both valid and agree at the first vertex.
+- The Multi-Source Lemma in every subtree must be read relative to the subtree.
+- "A white vertex reaches only white vertices" needs "through vertices outside T".
+- (T2) gave only the pre-order formula. The adversary checked both formulas on 80,296 vertices.
+
+It also proposed a rule that removes the dependence on [2, Lemma 3], called `selfcomp` in its code. A vertex x off S_X lies in a block if and only if some a in In(x,Y_j) ∩ S_X and b in Out(x,Y_j) ∩ S_X have b = a or b reaching a in J. Take the least identifier of a hub in the component of J as the identifier of the block, and replace (∗) by: the strong components of D′_j on X_j are strong components of D. The rule had no failure in the runs finished so far. The labels then identify the strong components, and the Order Theorem no longer uses [2, Lemma 3]. We state this as a remark and keep the proof of Section 4.
+
+It did not reach a real decomposition of [1], a CONGEST simulation of part-wise aggregation, shortcuts or the compression of [2], the proofs of [2], or literature claims. Trees on K₄ and larger graphs are sampled.
 
 ## References
 

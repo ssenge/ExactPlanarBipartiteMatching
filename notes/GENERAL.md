@@ -148,7 +148,7 @@ Then every vertex of G_x knows M_x on J_x, and all of them apply Lemma 1 with th
 
 *Solving.* A system on a nonsingular block drops nothing, so U₀ = U there, and |U| ≤ t. y on B_x is t sums, and y on U is t broadcasts. Downward no broadcast is needed: G_x ⊆ G_{p(x)}, so each vertex of G_x knows x on J_{p(x)} and computes x on P_x itself. So each depth costs Õ(τD + τ³).
 
-*Mates.* The search of Section 4 has at most |S_x| = O(τ²) hubs per bag. Each uses two solves and Õ(t) broadcasts, and each vertex of G_x then knows F_{R,R} and F_{R,s}, so it computes w itself. A neighbour reports over its own edge. By Fact 1, G′_x are vertex disjoint at one depth and their active vertices are not joined, so Lemma 6 holds. Each depth costs Õ(τ³D + τ⁵).
+*Mates.* The search of Section 4 has at most |S_x| = O(τ²) hubs per inner bag, and at most t = O(τ² log n) in a leaf, where every vertex is a hub. Each uses two solves and Õ(t) broadcasts, and each vertex of G_x then knows F_{R,R} and F_{R,s}, so it computes w itself. A neighbour reports over its own edge. By Fact 1, G′_x are vertex disjoint at one depth and their active vertices are not joined, so Lemma 6 holds. Each depth costs Õ(τ³D + τ⁵).
 
 *Certificate.* One solve gives D′ and A′. The components of G − A′ follow from [4, Lemma 8], and one aggregation per component gives its parity, in Õ(τD) rounds. A component lies in D′ or in C′, so the same run gives both parts of the check.
 
