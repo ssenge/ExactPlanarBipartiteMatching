@@ -88,7 +88,7 @@ a ⇝_{Y_j} b. By Fact 1 there is a u-v path in J. Take a path of least hops, sa
 
 and turn each arc (y_{i-1},y_i) with label j into a request, called a *segment*, in Y_j. A fixed rule
 breaks ties: least identifiers, first the node order, then the child. Every bag broadcasts the identifiers of
-its children, in Õ(D) rounds, since Y is connected, so each child holds a vertex of sep(Y) and there are at most 3|sep(Y)|. A
+its children, in Õ(D) rounds, since Y is connected, so with several children each holds a vertex of sep(Y), and there are at most max(1, 3|sep(Y)|). A
 leaf answers a request by a BFS path in the leaf, under the same kind of rule.
 
 **Interior nodes are hubs.** Every y_i with 0 < i < k is in sep⁺(Y). So, by induction, a start of a
