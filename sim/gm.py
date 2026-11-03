@@ -831,6 +831,34 @@ def paths_one(V, arcs, s_, t_, h, rng, st, wrong=False):
         st['FAIL.paths_real'] += 1
     if none_:
         st['FAIL.paths_with_no_end'] += 1
+    # the separating set of Section 6.1, from the cover of Koenig on H
+    if (s_, t_) in arcs:
+        return
+    cert = certificate(h4, own, a, Es, set(piv), adj, len(Vq), len(mate) // 2, st, rng, P)
+    if cert is None:
+        return
+    Dp, Ap, _ = cert
+    cover = Ap | {x for x in Vq - Dp - Ap if x % 4 in (0, 2)}
+    if any(x not in cover and y not in cover for x, y in Es):
+        st['FAIL.sep_not_cover'] += 1
+    if len(cover & {4 * v + i for v in Vp for i in range(4)}) != len(Vp) + val:
+        st['FAIL.sep_cover_size'] += 1
+    both = {v for v in Vp if 4 * v in cover and 4 * v + 1 in cover}
+    Sp = both | {v for v in Vp if 4 * v + 2 in cover or 4 * v + 3 in cover}
+    Dg = nx.DiGraph()
+    Dg.add_nodes_from(V)
+    Dg.add_edges_from(arcs)
+    def cut(R):
+        K = Dg.copy()
+        K.remove_nodes_from(R)
+        return not nx.has_path(K, s_, t_)
+    st['chk.sep'] += 1
+    if len(Sp) != val:
+        st['FAIL.sep_size'] += 1
+    if not cut(Sp):
+        st['FAIL.sep_not_separating'] += 1
+    st['ctl.sep_extra_copy_used'] += int(Sp != both)
+    st['ctl.sep_both_only_fails'] += int(not cut(both))
 
 
 def paths_lane(seed, secs, wrong=False):
