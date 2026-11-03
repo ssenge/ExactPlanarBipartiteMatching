@@ -22,8 +22,8 @@ check, running [3] in parallel gives min{Õ(D²), O(s\* log s\*)}, where s\* is 
 
 **Weighted Matching Theorem.** A maximum weight matching of a bipartite planar network with integer
 weights in {0,…,n^{O(1)}}, together with an optimal integer dual, is computed in Õ(D³) rounds with the
-digraph SSSP of [2, Lemma 4], whose proof [2] defers to its full version, and in Õ(D²) rounds with the
-Exact SSSP Theorem of [6], which holds given the Label Hypothesis stated there.
+exact labels of `notes/EXACT_LABELS.md`, which also give the digraph SSSP of [2, Lemma 4], whose proof [2] defers to its
+full version, and in Õ(D²) rounds with the Exact SSSP Theorem of [6], which holds given the Label Hypothesis stated there.
 
 **Multi-Source Lemma.** For any set S of sources in a planar digraph, every vertex learns in Õ(D)
 rounds whether some source reaches it.
@@ -238,8 +238,8 @@ All of (D1) to (D3) hold on C ∪ {h}. Integers stay integers.
 
 **Distributed.** (D1) to (D3) give y ≤ max w, also for y(h), so all lengths are at most 2·max w.
 Give every edge of X, in each direction that is not a residual arc, the length L = 1 + n·(largest length), so X is
-strongly connected and d ≥ L means unreachable; such a d counts as infinity in δ. Run SSSP on X. Zero lengths, which [2] does not address, go away by
-ℓ′ = (n+1)ℓ+1 and d = ⌊d′/(n+1)⌋; [6] allows them. Elect δ and z by aggregation on the tree of X. The
+strongly connected and d ≥ L means unreachable; such a d counts as infinity in δ. Run SSSP on X, over the inner BDD. `notes/EXACT_LABELS.md` and [6] allow zero lengths. [2] does not address them, and with it they go away by
+ℓ′ = (n+1)ℓ+1 and d = ⌊d′/(n+1)⌋. Elect δ and z by aggregation on the tree of X. The
 update is local. Each edge sees whether it is tight under y′, so the tight arcs form a planar digraph in which any h-z path has
 length d(z). Run the Path Lemma on it, over the same subdivided network as in Section 4. Since the path comes from the
 Path Lemma, no parent pointers are used. Per insertion this is SSSP plus Õ(D), with Õ(D) insertions per depth. ∎

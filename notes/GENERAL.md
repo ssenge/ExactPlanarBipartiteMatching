@@ -1,6 +1,6 @@
 # Exact maximum matching in general planar and low-treewidth networks
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. Refereed and attacked by independent AI passes on 3 Nov 2026. No theorem failed, and the corrections are listed in Section 10. No human has checked it. It uses the region bags of [6], `notes/LEMMA15.md`, Section 9, and not the Label Hypothesis. Importance if it survives: significant, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction on planar networks, and for treewidth τ it removes the bipartite restriction of [4, Theorem 4] and improves its bound.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. Refereed and attacked by independent AI passes on 3 Nov 2026. No theorem failed, and the corrections are listed in Section 10. No human has checked it. It uses a decomposition with the properties of Section 2, which the published decomposition of [10] and the region bags of [6] both have, and not the Label Hypothesis. Importance if it survives: significant, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction on planar networks, and for treewidth τ it removes the bipartite restriction of [4, Theorem 4] and improves its bound.
 
 The model is CONGEST on a connected network G with n vertices and hop diameter D, planar with a known embedding except in Section 6. Õ hides factors polylogarithmic in n. Words have O(log n) bits, and local computation is unbounded.
 
@@ -25,6 +25,8 @@ What is new here is the distributed form: the elimination moves Õ(D²) words pe
 ## 2. What is used from the hierarchy
 
 From [6], as listed in `notes/DIAMETER.md`, Section 2. A bag X has a region graph R_X, a subgraph of G with vertex set V(X), and R_root = G.
+
+Only the sizes in (H1) are used below, not that S_X is a path. So the bounded diameter decomposition of [10] serves as well, with (B1) to (B4) of `notes/MATCHING.md`: R_X is the bag and S_X its separator. (B1) and (B2) give (H1) and (H2) with a BFS tree of each bag, (B2) and (B3) give (H3), since the only child of x holds every edge at x, and (B3) gives (H5). It is randomized, or deterministic by the separator of [11], which is not needed since this note is randomized anyway. So the theorems below do not depend on the unpublished region bags. The simulator runs on its own bags and on region bags, not on real bags of [10].
 
 - (H1) The tree of bags has height O(log n). A non-leaf X has a path q_X of T_X with S_X = V(q_X). A leaf has Õ(D) vertices.
 - (H2) R_X has a spanning tree T_X of diameter Õ(D). For each depth, every edge of G lies in at most two graphs R_X. So the bags of one depth can run a pipelined broadcast or convergecast of w words, in parallel, in Õ(D + w) rounds.
@@ -222,3 +224,5 @@ It did not reach an exhaustive enumeration of abstract hierarchies, a simulation
 7. M. O. Rabin, V. V. Vazirani. Maximum matchings in general graphs through randomization. Journal of Algorithms 10(4), 557-567, 1989.
 8. H. Karloff. A Las Vegas RNC algorithm for maximum matching. Combinatorica 6(4), 387-391, 1986.
 9. J. Cheriyan. Randomized Õ(M(|V|)) algorithms for problems in matching theory. SIAM Journal on Computing 26(6), 1635-1655, 1997.
+10. J. Li, M. Parter. Planar Diameter via Metric Compression. STOC 2019.
+11. Y. Abd-Elhaleem, M. Dory, O. Weimann. A Simple Distributed Deterministic Planar Separator. arXiv:2602.22916.
