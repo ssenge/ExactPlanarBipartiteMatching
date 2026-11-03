@@ -38,9 +38,17 @@ Maximum matching does not follow from the Õ(D) row, since free vertices would n
 
 ## How it works
 
+![How the results depend on each other: published decompositions and labels on top, the Path Lemma, exact labels and Tutte elimination in the middle, the four main theorems at the bottom](figures/overview.svg)
+
+Shaded boxes are published tools, and boxes with thick borders are the main theorems.
+
 **Bipartite matching.** A recursive decomposition splits the network into bags of hop diameter Õ(D) along separators of Õ(D) vertices. Pieces are solved bottom up. Then the separator vertices are put back one at a time, as in the classical sequential method of Lipton and Tarjan. Each insertion changes the matching along at most one augmenting path, so the whole problem comes down to this: find one *simple directed path* in a planar digraph, quickly.
 
 That is the main new tool, the **Path Lemma**: a simple directed s-t path in Õ(D) rounds. There are Õ(D) insertions per level, each at Õ(D) rounds, over O(log n) levels, which gives Õ(D²).
+
+![One insertion: the new vertex h reaches a free vertex t along a path that alternates between unmatched and matched edges, and flipping the path gives a larger matching](figures/insertion.svg)
+
+Here the thick edges are the matching, and the new vertex h reaches the free vertex t. Flipping the path gives the matching on the right.
 
 **Weighted matching.** The insertion becomes a primal-dual step, with one exact shortest-path computation per insertion.
 
