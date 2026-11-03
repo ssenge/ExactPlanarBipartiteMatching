@@ -69,8 +69,18 @@ def classes_bits(keyz, arcs, rest, n):
 
 
 def out_tree(x, K, arcs, rng):
-    """Any spanning out-tree of K from x. The algorithm must work for each of them, so the shape varies."""
-    how = rng.choice(['queue', 'stack', 'random'])
+    """Any spanning out-tree of K from x. The algorithm must work for each of them, so the shape varies.
+    The shape 'any' can give every spanning out-tree. The others give first-visit trees only."""
+    how = rng.choice(['queue', 'stack', 'random', 'any'])
+    if how == 'any':
+        par, seen, front = {}, {x}, [(x, v) for v in arcs.get(x, ()) if v in K]
+        while front:
+            u, v = front.pop(rng.randrange(len(front)))
+            if v not in seen:
+                seen.add(v)
+                par[v] = u
+                front += [(v, w) for w in arcs.get(v, ()) if w in K and w not in seen]
+        return par
     par, front = {}, [x]
     seen = {x}
     while front:
