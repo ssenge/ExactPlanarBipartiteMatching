@@ -58,7 +58,7 @@ If some g(z) > 0, take an end z with largest gain and flip M along a simple h-z 
 
 ## 4. Limits
 
-**Perfect matchings.** The reduction to w′ = Kn − w raises W to about nW. Without y ≥ 0 and (D3), nothing limits the duals by W, and a long alternating path can force duals of size about nW. So the Small Weights Theorem gives Õ(D² + nW·D) here. This depends on n and never beats gathering the graph in O(n) rounds, so it gives nothing in D alone, and the corollary on perfect matchings in `notes/MATCHING.md` keeps its bound.
+**Perfect matchings.** The reduction to w′ = Kn − w raises W to about nW. Without y ≥ 0 and (D3), nothing limits the duals by W, and a long alternating path can force duals of order nW. So the Small Weights Theorem gives Õ(D² + nW·D) here. This depends on n and never beats gathering the graph in O(n) rounds, so it gives nothing in D alone, and the corollary on perfect matchings in `notes/MATCHING.md` keeps its bound.
 
 **Dual steps.** Long steps do not remove the term W·D from this analysis. Take a tree with a vertex h, neighbours b₁, …, b_m and one more neighbour a_i of each b_i, with w(hb_i) = i and w(b_ia_i) = m + 1 = W. Its diameter is 4. Let M = {b_ia_i}, with the optimal dual y(b_i) = 0 and y(a_i) = W, which a leaf may return. Inserting h takes exactly m + 1 dual steps of length 1: each of the first m adds one leg to S, and the last brings θ to 0 (`wsmall.py limits` checks this). With y(b_i) = W and y(a_i) = 0 the same insertion takes one step, so the count depends on the duals at hand.
 
