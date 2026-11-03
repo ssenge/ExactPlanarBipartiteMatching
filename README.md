@@ -14,6 +14,8 @@ Exact maximum matching in the CONGEST model on planar networks of hop diameter D
 | Out-forest from any set of sources in a planar digraph | Õ(D) | |
 | Order of the strong components, topological order of a planar DAG | Õ(D) | |
 | Depth-first search of a planar digraph | Õ(D²) | Õ(D) undirected, arXiv:2504.21620 |
+| Depth-first search of a planar DAG, integer topological order of the strong components | Õ(D) | |
+| Depth-first search of a planar digraph with strong components of at most s vertices | Õ(D·min(s,D)) | |
 
 **Status: proofs written, simulation clean (863,003 runs), combinatorial core in Lean. One AI referee pass and one adversarial pass; no
 counterexample to a theorem, two mistakes in the wording, all corrections in the note. No human has checked it.** Every line is a claim. What the checks do not cover is in
@@ -22,6 +24,7 @@ Section 9 of `notes/MATCHING.md` and in `sim/REPORT.md`.
 - `notes/MATCHING.md`: statements and proofs.
 - `notes/GENERAL.md`: the rows for general planar networks and for treewidth τ, by elimination on the Tutte matrix in the tree of bags. **Written on 3 Nov 2026; refereed and attacked by independent AI passes, which broke no theorem and led to four corrections, listed in its Section 10.** Simulation: `python3 -I sim/gm.py <seed> <seconds> [big]`, `sim/gm.py ctl <seed> <seconds>`, `sim/gm.py region <seed> <seconds>`, `sim/gm.py tw <seed> <seconds>`, `sim/gm.py twctl <seed> <seconds>`, `sim/gm.py paths <seed> <seconds>`, `sim/gm.py tiny <seed> <seconds>`.
 - `notes/DIRECTED.md`: the rows for out-forests, orders and depth-first search on digraphs. **Written on 3 Nov 2026; not yet refereed or attacked. Treat it as a claim.** Simulation: `python3 -I sim/dirs.py <seed> <seconds> [big]`, `sim/dirs.py ctl <seed> <seconds>`.
+- `notes/DAG_DFS.md`: the rows for planar DAGs, integer topological order and small strong components. **Written on 3 Nov 2026; not yet refereed or attacked. Treat it as a claim.** Simulation: `python3 -I sim/dagdfs.py <seed> <seconds> [big]`, `sim/dagdfs.py ctl <seed> <seconds>`, `sim/dagdfs.py scale`.
 - `sim/`: centralized simulation with independent optimum checks and negative controls. It checks the logic of the
   proofs, not round counts. Run `python3 -I sim/run.py <seed> <seconds> [big]`, `python3 -I sim/run.py path <seed> <seconds> [big]`
   and `python3 -I sim/run.py ctl <seed> <seconds>`. With `networkx` installed, every instance is also checked for planarity.

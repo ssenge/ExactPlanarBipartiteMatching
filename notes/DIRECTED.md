@@ -167,8 +167,7 @@ Negative controls, `sim/dirs.py ctl 4 8`. Each breaks one rule of the proofs, an
 ## 8. Open
 
 - Õ(D) for depth-first search on digraphs. Two tree paths of an out-forest are a balanced separator by [5, Theorem 3], but a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. A path separator as in [7] would be enough.
-- Õ(D) for depth-first search on DAGs, where no vertex on the stack can block a later search.
-- Dominators of a planar digraph, and integer ranks in topological order in Õ(D).
+- Dominators of a planar digraph. Õ(D) on DAGs and integer ranks in topological order are in `notes/DAG_DFS.md`, which came after this note.
 
 ## References
 
