@@ -19,13 +19,13 @@ The question is how many rounds this takes. Two numbers matter:
 
 | Problem | Rounds here | Best previous bound |
 |---|---|---|
-| **Maximum matching, bipartite planar** | **Õ(D²)** | Õ(D⁷), implied by the treewidth bound of [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
-| Maximum weight matching, bipartite planar | Õ(D³) | none polynomial in D alone |
-| Minimum vertex cover and maximum independent set, bipartite planar | Õ(D²) | Õ(D⁷), from the first row with König's theorem |
-| **Maximum matching, general planar**, zero error, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
+| **Maximum matching, bipartite planar** | **Õ(D²)** | Õ(D³), implied by the classical separator method with one exact shortest-path run per insertion; Õ(D⁷), implied by the treewidth bound of [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
+| Maximum weight matching, bipartite planar | Õ(D³) | Õ(D³), implied by the same method. New here is the complete proof, since the published one is deferred to a full version |
+| Minimum vertex cover and maximum independent set, bipartite planar | Õ(D²) | Õ(D³), from the first row with König's theorem |
+| **Maximum matching, general planar**, zero error given the decomposition, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
 | Maximum matching, treewidth τ, not necessarily planar or bipartite | Õ(τ³D + τ⁵), randomized | Õ(τ⁴D + τ⁷), bipartite only, [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 
-These rows use only published decompositions and labels, plus the proofs in this repository. Previous bounds are results of other authors, as far as our literature searches show, which is not proof that nothing better exists. Õ(D⁷) is not stated in the cited paper and follows from its treewidth bound, since a planar network has treewidth O(D).
+These rows use only published decompositions and labels, plus the proofs in this repository. Previous bounds are results of other authors or direct consequences of them, as far as our literature searches show, which is not proof that nothing better exists. "Implied" means that the bound is not stated there: Õ(D⁷) follows from a treewidth bound, since a planar network has treewidth O(D), and Õ(D³) from the classical method. A perfect matching alone already takes Õ(D²) rounds through known tools, so the new point is the maximum matching, which also handles free vertices.
 
 Two bounds improve under the **Label Hypothesis**, an assumption stated in the companion repository [ExactShortestPathsAndFlowsOnPlanarGraphs](https://github.com/ssenge/ExactShortestPathsAndFlowsOnPlanarGraphs). If the hypothesis fails, only these two rows fall away, and the bounds above still stand.
 
@@ -44,7 +44,7 @@ Shaded boxes are published tools, and boxes with thick borders are the main theo
 
 **Bipartite matching.** A recursive decomposition splits the network into bags of hop diameter Õ(D) along separators of Õ(D) vertices. Pieces are solved bottom up. Then the separator vertices are put back one at a time, as in the classical sequential method of Lipton and Tarjan. Each insertion changes the matching along at most one augmenting path, so the whole problem comes down to this: find one *simple directed path* in a planar digraph, quickly.
 
-That is the main new tool, the **Path Lemma**: a simple directed s-t path in Õ(D) rounds. There are Õ(D) insertions per level, each at Õ(D) rounds, over O(log n) levels, which gives Õ(D²).
+That is the main new tool, the **Path Lemma**: a simple directed s-t path in Õ(D) rounds. There are Õ(D) insertions per level, each at Õ(D) rounds, over O(log n) levels, which gives Õ(D²). With one exact shortest-path run per insertion, the same method gives Õ(D³).
 
 ![One insertion: the new vertex h reaches a free vertex t along a path that alternates between unmatched and matched edges, and flipping the path gives a larger matching](figures/insertion.svg)
 
@@ -52,7 +52,7 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 
 **Weighted matching.** The insertion becomes a primal-dual step, with one exact shortest-path computation per insertion.
 
-**General matching.** Augmenting paths are hard without bipartiteness, so this route is algebraic. It runs Gaussian elimination on a random Tutte matrix along the tree of bags, keeping at most Õ(D²) words per bag, and then finds mates top down. A Gallai-Edmonds check verifies the answer, so the algorithm never outputs a wrong result: it restarts on a failed check.
+**General matching.** Augmenting paths are hard without bipartiteness, so this route is algebraic. It runs Gaussian elimination on a random Tutte matrix along the tree of bags, keeping at most Õ(D²) words per bag, and then finds mates top down. A Gallai-Edmonds check verifies the answer, so, given a valid decomposition, the algorithm never outputs a wrong result: it restarts on a failed check.
 
 ## All results
 
@@ -63,7 +63,7 @@ Here the thick edges are the matching, and the new vertex h reaches the free ver
 | Maximum matching, bipartite planar | Õ(D²) | [`notes/MATCHING.md`](notes/MATCHING.md) |
 | Maximum weight matching, optimal dual, minimum weight perfect matching | Õ(D³) | same note, with [`notes/EXACT_LABELS.md`](notes/EXACT_LABELS.md) |
 | Minimum vertex cover, maximum independent set | Õ(D²) | [`notes/MATCHING.md`](notes/MATCHING.md) |
-| Maximum matching, general planar, Gallai-Edmonds sets | Õ(D²), randomized, zero error | [`notes/GENERAL.md`](notes/GENERAL.md) |
+| Maximum matching, general planar, Gallai-Edmonds sets | Õ(D²), randomized, zero error given the decomposition | [`notes/GENERAL.md`](notes/GENERAL.md) |
 | Maximum matching, treewidth τ | Õ(τ³D + τ⁵), randomized | same note |
 | Vertex-disjoint s-t paths and a minimum vertex separator | same two bounds | same note |
 | Perfect matching, prescribed degrees | Õ(D) given the Label Hypothesis | [`notes/NEGATIVE.md`](https://github.com/ssenge/ExactShortestPathsAndFlowsOnPlanarGraphs/blob/main/notes/NEGATIVE.md) in the companion repository |

@@ -33,7 +33,7 @@ rounds whether some source reaches it.
 Weighted Matching Theorem.
 
 **Context.** The bound Õ(τ⁴D+τ⁷) of [4, Theorem 4] for treewidth τ, with τ = O(D) on planar graphs,
-implies Õ(D⁷) for the unweighted problem. Exact minimum cost flow takes n^{1/2+o(1)}D rounds on planar
+implies Õ(D⁷) for the unweighted problem. The insertion scheme of this note with one exact SSSP of [2, Lemma 4] per insertion implies Õ(D³), also with weights, so the Matching Theorem gains a factor D on that. Neither is stated in a source that we found. Exact minimum cost flow takes n^{1/2+o(1)}D rounds on planar
 graphs [7], for one s-t flow on the communication graph. Matching needs a super-source and a super-sink, and
 these can break planarity: on the cube every face holds 2 of the 4 vertices of one side, so even one apex on
 that side is non-planar. So the planar bound of [7] does not give matching by its statement. If its Laplacian
