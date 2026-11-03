@@ -115,7 +115,7 @@ def labels(k, A, B, m, st, mode):
             dlt[lev, t] = cur
             truth = [j for j in C if m[j] > t]
             st['chk.delta'] += 1
-            if mode == 'ok' and cur != (truth[-1] if truth else None):
+            if mode in ('ok', 'markj1', 'ringr', 'nota') and cur != (truth[-1] if truth else None):
                 st['FAIL.delta'] += 1
     return lam, dlt
 
@@ -182,8 +182,7 @@ def path_step(Q, R, E, arcs, st, mode, check):
             if v in pos:
                 t = pos[v]
                 if u in pos:
-                    if pos[u] != t - 1 and pos[u] != t:
-                        A[t], B[t] = min(A[t], pos[u]), max(B[t], pos[u])
+                    A[t], B[t] = min(A[t], pos[u]), max(B[t], pos[u])
                 else:
                     A[t], B[t] = min(A[t], a[u]), max(B[t], b[u])
     if mode == 'noback':
@@ -278,6 +277,28 @@ def dominators(arcs, r, n, rng, st, mode='ok'):
     return run.idom
 
 
+def dag_dominators(arcs, r, n, rng, st, s, mode='ok'):
+    """The same path step on the passes of sim/dagdfs.py, with no general search."""
+    run = Run(arcs, r, st, mode, rng)
+    sp, sm = dd.split, dd.small
+
+    def split(K, path, *rest):
+        new = sp(K, path, *rest)
+        run.on_path(K, path, new)
+        return new
+
+    def small(x, K, a, kids):
+        dd.small = sm
+        run.on_small(x, K, a, kids)
+        dd.small = small
+    dd.split, dd.small = split, small
+    try:
+        dd.dag_dfs(arcs, [r], n, rng, st, 'ok', s)
+    finally:
+        dd.split, dd.small = sp, sm
+    return run.idom
+
+
 def jumps(k, rng):
     """A directed path with non-crossing chords on both sides, in both directions, some through a vertex off the path, so that intervals nest and jumps run back."""
     arcs = collections.defaultdict(set)
@@ -330,7 +351,8 @@ def nest(k, rng):
 
 def instance(rng, big):
     if rng.random() < .35:
-        return 'jumps', jumps(rng.randrange(6, 240 if big else 70), rng)
+        k = rng.randrange(6, 240 if big else 70)
+        return ('jumps', jumps(k, rng)) if rng.random() < .5 else ('nest', nest(k, rng))
     return gdfs.instance(rng, big)
 
 
@@ -383,6 +405,36 @@ def run_one(rng, st, big=False, mode='ok'):
     st['max.n'] = max(st['max.n'], len(V))
     st['runs'] += 1
     st['fam.' + name.split('.')[0]] += 1
+
+
+def dag_lane(seed, secs, big=False):
+    """Corollary 3: DAGs, and digraphs with cycles at the cost of more passes per level."""
+    rng = random.Random(seed)
+    st = collections.Counter()
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        name, V, E, arcs = dd.digraph(rng, big)
+        if len(V) < 2:
+            continue
+        st['chk.planar'] += 1
+        if not nx.check_planarity(nx.Graph(E))[0]:
+            st['FAIL.not_planar'] += 1
+        arcs = {u: set(vs) for u, vs in arcs.items()}
+        G = nx.DiGraph()
+        G.add_nodes_from(V)
+        G.add_edges_from((u, v) for u in arcs for v in arcs[u])
+        s = max(len(c) for c in nx.strongly_connected_components(G))
+        r = rng.choice(sorted(V))
+        idom = dag_dominators(arcs, r, len(V), rng, st, s)
+        true = {y: d for y, d in nx.immediate_dominators(G, r).items() if y != r}
+        st['runs'] += 1
+        st['runs.dag'] += int(s == 1)
+        st['max.scc'] = max(st['max.scc'], s)
+        st['max.n'] = max(st['max.n'], len(V))
+        st['n.nontrivial'] += sum(1 for y in true if true[y] != r)
+        if idom != true:
+            st['FAIL.tree'] += 1
+    return dict(sorted((k, int(v)) for k, v in st.items()))
 
 
 def stress_path(rng, st, mode='ok'):
@@ -485,6 +537,8 @@ if __name__ == '__main__':
         print(json.dumps(controls(int(sys.argv[2]), float(sys.argv[3])), indent=0))
     elif sys.argv[1] == 'ringctl':
         print(json.dumps(ring_controls(int(sys.argv[2]), float(sys.argv[3]))))
+    elif sys.argv[1] == 'dag':
+        print(json.dumps(dag_lane(int(sys.argv[2]), float(sys.argv[3]), len(sys.argv) > 4)))
     elif sys.argv[1] == 'scale':
         scale()
     else:

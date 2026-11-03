@@ -153,7 +153,7 @@ Each result is checked by the replay of a real search. Every class is checked ag
 
 ## 9. Open
 
-- Dominators of a planar digraph, which may now be in reach, since the classical algorithms start from a depth-first search.
+- Dominators of a planar digraph: `notes/DOMINATORS.md` claims Õ(D) on the passes of this search. It uses the paths and classes, not the search tree.
 - Other network classes with Õ(D) reachability and separators from a spanning tree.
 
 ## 10. Record of the adversary

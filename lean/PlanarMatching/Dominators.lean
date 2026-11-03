@@ -5,11 +5,13 @@ import PlanarMatching.GeneralSearch
 
 `notes/DOMINATORS.md`, Sections 3 to 5, on any digraph. `PathStep` is the setting of Section 3, with the virtual root as
 `p 0` and the flow graph as `D[K]`. `lemma1a` and `lemma1b` are Lemma 1, and `dom_path` and `dom_off` are its last claim. `closed_end` and
-`closed_le` are Lemma 2(a), through `closedJ_iff`, and `laminar` is Lemma 2(b). `class_dom` and `split_out` are Lemma 4(b):
-`class_dom` holds for any set with the property that `split_out` proves of a class. `closed_parts`, `closed_mem` and
-`candidate` are Lemma 5. `ring` is Lemma 6, `delta_ring` is the rule for `δ`, and `readoff` is Lemma 7.
+`closed_le` are Lemma 2(a), through `closedJ_iff`, and `laminar` is Lemma 2(b). `class_dom` and `split_out` are the core of
+Lemma 4(b): `class_dom` holds for any set with the property that `split_out` proves of a class, and it is not tied to `E_K` or to
+the split of a problem. `closed_parts`, `closed_mem` and `candidate` are Lemma 5. `ring` is Lemma 6, `delta_ring` is the rule for `δ`,
+and `readoff` is the case of Lemma 7 with `a` and `b` in one segment.
 
-Not here: the claim that aggregates and sweeps compute these values, and all round bounds.
+Not here: Lemma 3, Lemma 4(a), the cases `a = 0` and `a = b` and the higher segments of Lemma 7, the marks and their single sender,
+the claim that aggregates and sweeps compute these values, and all round bounds.
 -/
 
 namespace PlanarMatching.Dominators
@@ -44,7 +46,7 @@ def Feeds (i : ℕ) (y : V) : Prop := i ≤ S.k ∧ ∃ u, S.D (S.p i) u ∧ u �
 
 /-- The index `i` jumps to `t`. -/
 def Jumps (i t : ℕ) : Prop :=
-  i ≤ S.k ∧ i ≠ t ∧ i + 1 ≠ t ∧ (S.D (S.p i) (S.p t) ∨ ∃ u, u ∈ S.O ∧ S.Feeds i u ∧ S.D u (S.p t))
+  i ≤ S.k ∧ (S.D (S.p i) (S.p t) ∨ ∃ u, u ∈ S.O ∧ S.Feeds i u ∧ S.D u (S.p t))
 
 /-- `m` is `m(j)`: the first index after `j` reached without `p j`, or `k + 1`. -/
 structure IsEnd (j m : ℕ) : Prop where
@@ -151,7 +153,7 @@ theorem closedJ_end {j m : ℕ} (hm : S.IsEnd j m) (hj : j ≤ S.k) : S.ClosedJ 
   have hle := hm.le
   have htk : t ≤ S.k := by omega
   have hij : i ≠ j ∧ (i < j ∨ m ≤ i) := by omega
-  obtain ⟨hik, -, -, h⟩ := hjump
+  obtain ⟨hik, h⟩ := hjump
   have hRi := (lemma1a hm hj hik hij.1).2 hij.2
   refine hm.none t hjt htm ?_
   rcases h with h | ⟨u, huO, hf, hut⟩
@@ -190,9 +192,9 @@ theorem not_enter {j x : ℕ} (hj : j ≤ S.k) (hx : x ≤ S.k + 1) (hc : S.Clos
     · rintro t hjt htx rfl
       have htk : t ≤ S.k := by omega
       rcases hsrc with ⟨hvO, i, hf, hi⟩ | ⟨i, hik, rfl, hi⟩
-      · have := hc t i hjt htx ⟨hf.1, by omega, by omega, Or.inr ⟨v, hvO, hf, hvw.1⟩⟩
+      · have := hc t i hjt htx ⟨hf.1, Or.inr ⟨v, hvO, hf, hvw.1⟩⟩
         omega
-      · have := hc t i hjt htx ⟨hik, by omega, by omega, Or.inl hvw.1⟩
+      · have := hc t i hjt htx ⟨hik, Or.inl hvw.1⟩
         omega
     · intro hw
       rcases hsrc with ⟨hvO, i, ⟨hi, u, hu, huO, hr⟩, hii⟩ | ⟨i, hik, rfl, hi⟩

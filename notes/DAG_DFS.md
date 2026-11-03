@@ -181,7 +181,7 @@ Negative controls, `sim/sec5.py ctl 9023 60`:
 ## 8. Open
 
 - `notes/GENERAL_DFS.md` claims Õ(D) for depth-first search of all planar digraphs. What follows is the state before it. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. A separator that bounds strong components only is enough: [11, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [11] and [6] find these on planar digraphs in parallel. `notes/GENERAL_DFS.md` finds them in Õ(D): two root paths of a spanning out-tree come from the separator, and a binary search on them picks the component.
-- Dominators of a planar DAG.
+- Dominators of a planar DAG: Corollary 3 of `notes/DOMINATORS.md` claims Õ(D) on the passes of this note.
 
 ## 9. Record of the adversary
 
