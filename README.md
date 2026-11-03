@@ -15,8 +15,8 @@ Exact maximum matching in the CONGEST model on planar networks of hop diameter D
 | Order of the strong components, topological order of a planar DAG | Õ(D) | |
 | Depth-first search of a planar digraph | Õ(D), new claim, one referee and one adversary so far; Õ(D²) in `notes/DIRECTED.md` | Õ(D) undirected, arXiv:2504.21620 |
 | Depth-first search of a planar DAG, integer topological order of the strong components | Õ(D) | |
-| Dominator tree of a planar digraph, all dominators of one vertex | Õ(D), new claim, reviews running | no CONGEST bound found |
-| Strong articulation points and strong bridges of a planar digraph | Õ(D), new claim, reviews running | no CONGEST bound found |
+| Dominator tree of a planar digraph, all dominators of one vertex | Õ(D), new claim, one adversary so far | no CONGEST bound found |
+| Strong articulation points and strong bridges of a planar digraph | Õ(D), new claim, one adversary so far | no CONGEST bound found |
 | Depth-first search of a planar digraph with strong components of at most s vertices | Õ(D·min(s,D)), superseded if the Õ(D) claim above survives | |
 
 **Status: proofs written, simulation clean (863,003 runs), combinatorial core in Lean. One AI referee pass and one adversarial pass; no
@@ -28,8 +28,8 @@ Section 9 of `notes/MATCHING.md` and in `sim/REPORT.md`.
 - `notes/DIRECTED.md`: the rows for out-forests, orders and depth-first search on digraphs. **Written on 3 Nov 2026; attacked and refereed by independent AI passes, which broke no theorem and led to corrections listed in its Sections 9 and 10. Earlier work covers part of the forest and the order, see its Context; the depth-first search is the main claim. Treat it as a claim.** Simulation: `python3 -I sim/dirs.py <seed> <seconds> [big]`, `sim/dirs.py ctl <seed> <seconds>`.
 - `notes/DAG_DFS.md`: the rows for planar DAGs, integer topological order and small strong components. **Written on 3 Nov 2026; attacked and refereed by independent AI passes. No theorem broke; both found the same two faults in the proof for digraphs with cycles, repaired in its Section 5. Treat it as a claim.** Simulations: `python3 -I sim/sec5.py <seed> <seconds> [big]` for its Section 5, `python3 -I sim/dagdfs.py <seed> <seconds> [big]`, `sim/dagdfs.py ctl <seed> <seconds>`, `sim/dagdfs.py scale`.
 - `notes/GENERAL_DFS.md`: the row for depth-first search of all planar digraphs. **Written on 3 Nov 2026. Attacked and refereed by independent AI passes, which broke no lemma. Their corrections, the largest in the credit, are in its Sections 10 and 11. Treat it as a claim.** Simulation: `python3 -I sim/gdfs.py <seed> <seconds> [big]`, `sim/gdfs.py ctl <seed> <seconds>`, `sim/gdfs.py scale`.
-- `notes/DOMINATORS.md`: the rows for dominator trees, strong articulation points and strong bridges. **Written on 3 Nov 2026 on the paths and classes of the search above. A referee and an adversary are still running. Treat it as a claim.** Simulation: `python3 -I sim/dom.py <seed> <seconds> [big]`, `sim/dom.py ctl <seed> <seconds>`, `sim/dom.py scale`.
-- `sim/review/`: the independent engines of the referee and adversary of `notes/GENERAL_DFS.md`.
+- `notes/DOMINATORS.md`: the rows for dominator trees, strong articulation points and strong bridges. **Written on 3 Nov 2026 on the paths and classes of the search above. An adversary broke no lemma and found three false sentences, corrected in the note. A referee is still running. Treat it as a claim.** Simulation: `python3 -I sim/dom.py <seed> <seconds> [big]`, `sim/dom.py ctl <seed> <seconds>`, `sim/dom.py scale`.
+- `sim/review/`: the independent engines of the referee and adversary of `notes/GENERAL_DFS.md`, and in `sim/review/dom/` those of the adversary of `notes/DOMINATORS.md`.
 - `sim/monge.py <seed> <seconds> [control]`: spot check of the interval property behind (B5) on digraphs with absent arcs, as `notes/DIRECTED.md` needs it.
 - `sim/`: centralized simulation with independent optimum checks and negative controls. It checks the logic of the
   proofs, not round counts. Run `python3 -I sim/run.py <seed> <seconds> [big]`, `python3 -I sim/run.py path <seed> <seconds> [big]`

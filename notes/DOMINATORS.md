@@ -1,6 +1,6 @@
 # Dominator trees of planar digraphs in Õ(D) rounds
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dom.py`. Combinatorial core in Lean. An independent referee and an adversary are running on it; their records will be added here. No human has checked it. It uses the General Search Theorem of `notes/GENERAL_DFS.md`, itself a claim, through its paths and classes. Importance: solid if it survives. The dominator tree is a basic tool, and we found no bound for it in CONGEST. The proof is elementary, and its step along one path has sequential relatives, see Context.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dom.py`. Combinatorial core in Lean. An independent adversary broke no lemma and found three false sentences, corrected here, see Section 10. An independent referee is still running; its record will be added. No human has checked it. It uses the General Search Theorem of `notes/GENERAL_DFS.md`, itself a claim, through its paths and classes. Importance: solid if it survives. The dominator tree is a basic tool, and we found no bound for it in CONGEST. The proof is elementary, and its step along one path has sequential relatives, see Context.
 
 The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G. D is the diameter of the undirected G. Identifiers are distinct.
 
@@ -10,7 +10,7 @@ Let H be a digraph on G and r a vertex. A vertex v *dominates* y if v ≠ y and 
 
 **Dominator Theorem.** In Õ(D) rounds every vertex y ≠ r reached from r learns the identifier of idom(y).
 
-**Corollary 1 (cut vertices).** Given also a vertex t, every vertex learns in Õ(D) rounds whether it dominates t, that is, whether it lies on all paths from r to t.
+**Corollary 1 (cut vertices).** Given also a vertex t reached from r, every vertex learns in Õ(D) rounds whether it dominates t, that is, whether it lies on all paths from r to t.
 
 **Corollary 2 (single failures).** In Õ(D) rounds every vertex learns whether it is a strong articulation point of H, and every arc whether it is a strong bridge of H. A *strong articulation point* is a vertex whose removal increases the number of strong components, and a *strong bridge* is such an arc.
 
@@ -76,7 +76,7 @@ Apply the Split Lemma to Q and R. For a class K with head h and tail p(h) on R, 
 
 Conversely let P be a path from ρ to y in the flow graph of Q without w. Let e be the first vertex of P after its last vertex outside K, where ρ counts as outside. Then e is in E_K, and the rest of P lies in K. So y is reached in the flow graph of K without w. ∎
 
-*The algorithm.* The first problem is the set reached from r, with E = {r}. At each pass on a class Q with path R, all vertices of Q compute their last dominator on R by Section 5, and a vertex that has one records it, overwriting any earlier record. Then every vertex of a new class marks itself as an entry if it has an arc from outside its class, in one round. A problem below 12 vertices collects its flow graph and solves it, and its vertices record their immediate dominators if these are not ρ.
+*The algorithm.* The first problem is the set reached from r, with E = {r}. At each pass on a class Q with path R, all vertices of Q compute their last dominator on R by Section 5, and a vertex that has one records it, overwriting any earlier record. Then every vertex of a new class marks itself as an entry if it has an arc from a vertex of Q outside its class, in one round. The vertices of the first problem know that they are reached from r, and they tell their neighbours, so an arc from an unreached vertex never counts. A problem below 12 vertices collects its flow graph and solves it, and its vertices record their immediate dominators if these are not ρ.
 
 **Proposition.** At the end y records idom(y).
 
@@ -86,7 +86,9 @@ Conversely let P be a path from ρ to y in the flow graph of Q without w. Let e 
 
 Vertex-disjoint problems run at once throughout. The vertices of R know their positions by (T2).
 
-*Step 1: a and b.* b(y) is the first coordinate read from the key e(y) of the Split Lemma. a(y) comes in the same way, with keys (i, id(z)) for a head z with tail p_i, where entries off R count with i = 0. The bit search of Lemma 4 of `notes/DAG_DFS.md` needs only that keys do not increase along arcs and that a path from the best head stays in its class, and both hold here by the same proof. Let A_a = {p_a} ∪ {y : a(y) = a} for a ≥ 1, and B_b = {p_b} ∪ {y : b(y) = b}. A feeding path from p_{a(y)} stays in A_{a(y)}: its vertices are fed by a(y), and if one were fed by a smaller index, y would be too. So the sets A_a are connected and vertex-disjoint, and so are the sets B_b, and (P) applies to each family. Each p_t gets A(t) and B(t) from its neighbours in one round. If A(t) = a ≥ 1, then p_t has a neighbour in A_a, so it can send to A_a and hear from it. We call p_t a *leaf* of p_a.
+*Step 1: a and b.* b(y) is the first coordinate read from the key e(y) of the Split Lemma. a(y) comes in the same way, with keys (i, id(z)) for a head z with tail p_i, where entries off R count with i = 0. The bit search of Lemma 4 of `notes/DAG_DFS.md` needs only that keys do not increase along arcs and that a path from the best head stays in its class, and both hold here by the same proof. Let A_a = {p_a} ∪ {y : a(y) = a} for a ≥ 1, and B_b = {p_b} ∪ {y : b(y) = b}. A feeding path from p_{a(y)} stays in A_{a(y)}: its vertices are fed by a(y), and if one were fed by a smaller index, y would be too. So the sets A_a are connected and vertex-disjoint, and so are the sets B_b, and (P) applies to each family.
+
+In one round p_t learns A′(t) and B′(t), the least and the greatest of: a(u) and b(u) for arcs (u, p_t) with u in O, i for arcs (p_i, p_t) with i ≠ t, t − 1, and 0 if p_t is an entry. These can differ from A(t) and B(t), since a feeder of u may be t − 1 or t. The difference does not matter. Every jump to t counts here, and every value here that is below t − 1 or above t comes from a jump. So for j < t < x, A′(t) ≥ j if and only if A(t) ≥ j, and B′(t) < x if and only if B(t) < x, and A′(t) = A(t) if A′(t) < t − 1. Section 5 reads A only through tests A(t) < j with j < t, and B only through tests B(t) < x with t < x, so below we write A and B for A′ and B′. If A′(t) = a ≥ 1, then p_t has a neighbour in A_a, so it can send to A_a and hear from it. We call p_t a *leaf* of p_a.
 
 *Segments.* For a level ℓ, a *segment* is a set of positions whose codes t − 1 agree above bit ℓ. It is S = [l, r], cut by bit ℓ into Z = [l, c] and Y = [c + 1, r], and we skip it if Y is empty. Segments of one level are vertex-disjoint subpaths. For positions i < i′, there is exactly one segment with i in Z and i′ in Y. A *sweep* gives each vertex of a subpath the minimum of some values before it or after it on the subpath. It takes O(log n) applications of (P), over the dyadic pieces of the subpath.
 
@@ -118,13 +120,13 @@ Then δ(t) is the value of the last mark at or before t, or j_s if there is none
 
 Each vertex of R now has a *label*: λ for segments where it lies in Z, and δ for segments where it lies in Y. A label has O(log n) entries.
 
-*Step 4: reading off.* p_t takes δ from its lowest level with a member, which is its last dominator on R by Lemma 3(a), since j < t and m(j) > t puts j in Z of the segment with t in Y. A vertex y in O gets the labels of p_{a(y)} and p_{b(y)}, by O(log n) broadcasts over A_a and B_b.
+*Step 4: reading off.* p_t takes δ(t) from its lowest level where it exists, which is its last dominator on R by Lemma 3(a), since j < t and m(j) > t puts j in Z of the segment with t in Y. A vertex y in O gets the labels of p_{a(y)} and p_{b(y)}, by O(log n) broadcasts over A_a and B_b.
 
-**Lemma 7.** Let a = a(y) and b = b(y). If a = 0, y has no dominator on R. If a = b, its last dominator on R is p_a. If a < b, let S be the segment with a in Z and b in Y. If λ_S(a) and δ_S(b) both exist, the last dominator on R is the earlier of the two. Otherwise it is δ_{S′}(b) for the lowest higher segment S′ with b in its Y and a member there, if any.
+**Lemma 7.** Let a = a(y) and b = b(y). If a = 0, y has no dominator on R. If a = b, its last dominator on R is p_a. If a < b, let S be the segment with a in Z and b in Y. If λ_S(a) and δ_S(b) both exist, the last dominator on R is the earlier of the two. Otherwise it is δ_{S′}(b) for the lowest higher segment S′ with b in its Y where this value exists, if any.
 
-*Proof.* By Lemma 3(b) we want the largest j with 1 ≤ j ≤ a and m(j) > b. If a = b, this is j = a, since m(a) > a. Let a < b. If j is in Z, then m(j) > b ≥ c + 1, so j is in the chain. The members at or before a are a prefix of the chain, and the members with m > b are a prefix too, by Lemma 2(b). So the last common member is the earlier of λ(a) and δ(b). If there is none, j lies before S, so j ≤ a holds, and j lies in Z′ of a higher segment with b in Y′. The sets Z′ of lower segments hold larger positions, so the lowest segment with a member gives the largest j. ∎
+*Proof.* By Lemma 3(b) we want the largest j with 1 ≤ j ≤ a and m(j) > b. If a = b, this is j = a, since m(a) > a. Let a < b. If j is in Z, then m(j) > b ≥ c + 1, so j is in the chain. The members at or before a are a prefix of the chain, and the members with m > b are a prefix too, by Lemma 2(b). So the last common member is the earlier of λ(a) and δ(b). If there is none, j lies before S, so j ≤ a holds, and j lies in Z′ of a higher segment with b in Y′. The sets Z′ of lower segments hold larger positions, so the lowest such segment gives the largest j. ∎
 
-*Rounds.* Step 1 takes two bit searches, each O(log n) runs of the Multi-Source Lemma. Each of O(log n) levels takes O(log n) applications of (P). So one pass takes Õ(D) rounds, and with O(log² n) passes the theorem follows. A problem below 12 vertices takes O(1) rounds. The labels and the marks are the only part that uses more than aggregates over R, and it uses only the sets A_a.
+*Rounds.* Step 1 takes two bit searches, each O(log n) runs of the Multi-Source Lemma. Each of O(log n) levels takes O(log n) applications of (P). So one pass takes Õ(D) rounds, and with O(log² n) passes the theorem follows. A problem below 12 vertices takes O(1) rounds. The labels and the marks are the only part that uses more than aggregates over R. They use the sets A_a, and the reading off uses the sets A_a and B_b.
 
 ## 6. Corollaries
 
@@ -132,7 +134,7 @@ Each vertex of R now has a *label*: λ for segments where it lies in Z, and δ f
 
 *Corollary 2.* Find the strong components with the identifiers, and in each component C a root s, say with the least identifier. Vertex-disjoint components run at once. For v ≠ s in C, the digraph D[C] − v is strongly connected if and only if every other vertex reaches s and is reached from s in it. That is, if and only if v dominates no vertex in D[C] from s and none in the reversal of D[C] from s. This is the reduction of [7]. The reversal is a digraph on G as well. A vertex v that dominates some y has an out-neighbour y′ with idom(y′) = v: on a simple path from s to y, let y′ be the vertex after v. Then v dominates y′, or y could be reached without v, and the path up to y′ has no vertex between v and y′. So v learns this in one round. The roots s are tested by one run of the identifiers on the components without s, with one aggregate per component.
 
-For strong bridges, subdivide each arc (u, v) by a vertex x_{uv}. The new network is planar, has diameter at most 2D + 1, and each round of it takes O(1) rounds on G, with x_{uv} simulated by u. An arc between two components is no strong bridge. An arc inside C is one exactly if x_{uv} dominates some vertex from s in the subdivided D[C] or in its reversal, and by the remark above the one out-neighbour of x_{uv} then has it as immediate dominator.
+For strong bridges, subdivide each arc (u, v) by a vertex x_{uv}. The new network is planar, has diameter at most 2D + 2, and each round of it takes O(1) rounds on G, with x_{uv} simulated by u. An arc between two components is no strong bridge. An arc inside C is one exactly if x_{uv} dominates some vertex from s in the subdivided D[C] or in its reversal, and by the remark above the one out-neighbour of x_{uv} then has it as immediate dominator.
 
 ## 7. Checks
 
@@ -159,6 +161,17 @@ Negative controls, `dom.py ctl 934 60`, 60 seconds each. Each changes one rule, 
 | `nopast` | the mark of the ring running past r is left out | 12,912 | 2,694 |
 | `maxld` | the larger of the two values is taken in Lemma 7 | 12,552 | 2,519 |
 
+Three further controls change rules of the rings, in the path step alone, `dom.py ringctl 971 60`. The final tree does not see them in most runs, so here the checks on δ and on deepest values count.
+
+| Control | What it changes | Runs | Counters that fire |
+|---|---|---|---|
+| none | | 13,410 | none |
+| `markj1` | a mark takes the next member, not j_i | 14,124 | deepest 17,284 |
+| `ringr` | a ring needs m_i < r instead of m_i ≤ r | 13,998 | deepest 2,313 |
+| `nota` | the test t_a = X(j_{i+1}) is dropped | 13,989 | mark_twice 4, mark_pos 3, routes_meet 3 |
+
+The last one fires rarely. The adversary's engine hits this rule far more often, see Section 10.
+
 Scale, `dom.py scale`, one run per size, no failure. These runs do not check planarity.
 
 | Family | n | Reached | Nontrivial dominators | Max k | Longest chain | Levels |
@@ -179,7 +192,9 @@ The final tree is compared with `networkx.immediate_dominators`, and on instance
 
 - Rounds, messages and who knows what: no CONGEST simulation. The sim computes values in the order of Section 5, and it checks that rings are disjoint, but it does not route anything.
 - The tools and the General Search Theorem, with their caveats in `notes/GENERAL_DFS.md`. If that theorem falls, the path step and Lemma 4 still stand, and the bound becomes the number of passes of whatever search replaces it, times Õ(D).
-- Corollaries 1 and 2 are not simulated.
+- Corollaries 1 and 2 are not simulated in `sim/dom.py`. The adversary's exhaustive engine covers them, see Section 10.
+- The marks of Step 3 are rare on the paths of the General Search: 8 ring marks in 2,838 runs. They are exercised by the runs of the path step alone, which do not use these paths. The path step does not depend on where the path comes from, so this is a gap in coverage only.
+- The final tree is blind to some errors in the marks. The controls `markj1`, `ringr` and `nota` below therefore count the internal checks on δ and on deepest values.
 - Lean: `lean/PlanarMatching/Dominators.lean` proves Lemma 1, the part of Lemma 2 on closed intervals and laminarity, the class statement of Lemma 4, the candidate and ring statements of Lemmas 5 and 6, and the read-off of Lemma 7 from given values, with standard axioms and no `sorry`. It does not cover that the aggregates compute these values, the rounds, the disjointness of routes, Lemma 3, the chain composition in the Proposition, or the corollaries.
 
 ## 9. Open
@@ -187,6 +202,36 @@ The final tree is compared with `networkx.immediate_dominators`, and on instance
 - Low-high orders and two independent spanning trees of a flow graph, which would give certificates for the tree.
 - 2-vertex-connected blocks of a digraph, and small vertex cuts in digraphs.
 - The size of the set that each vertex dominates. The dominator tree is not a subgraph of G, so (T2) does not apply directly.
+
+## 10. Record of the adversary
+
+An independent adversary worked on this note on 3 Nov 2026, with its own code, in `sim/review/dom/`. **No lemma, the Proposition, a corollary or a round claim of Sections 3 to 6 fell.** Three sentences were false as written and are corrected above.
+
+- Section 4 let a vertex mark itself as an entry for an arc from an unreached vertex. Instance: r = 0, and for i = 0, ..., 6 the arcs 0 → 1 + 3i, 1 + 3i → 2 + 3i, 3 + 3i → 2 + 3i. A vertex 2 + 3i then keeps the record 0, while idom = 1 + 3i. The code never followed this sentence.
+- The bound on the diameter of the subdivided network was 2D + 1. K4 with one arc per edge gives 4.
+- Section 5 said that p_t gets A(t) and B(t) in one round and has a neighbour in A_{A(t)}. Path p_1, ..., p_6 with u, and arcs p_2 → u, p_5 → u, u → p_3: then A(3) = 5, but p_3 sees a(u) = 2. The values A′ and B′ now in the text are what the code uses, and the tests read only the part where they agree.
+
+It also tightened three smaller phrases, and asked for Corollary 1 to say that t is reached.
+
+Its attempts, all with no failure:
+
+| Lane | Tested | Count |
+|---|---|---|
+| All digraphs on 5 vertices, all k and entry sets | Lemmas 1 to 7, the parts A_a and B_b, E_K, Lemma 4 | 25,395,200 |
+| All digraphs on 6 vertices, k = 5, 6, E = {root} | same | 98,566,144 |
+| All arrays (A, B), k = 6, 7, all (a, b) | Lemmas 2, 5, 6, 7, marks, δ | 114,428,480 arrays |
+| Structured arrays, k up to 500 | same | 35,634,432, with 3,759,938 ring marks |
+| Random digraphs, n = 9 to 14, k = 8 to 12 | same | 57,678,069, with 115,106 ring marks |
+| Corollary 2, all digraphs on 5 vertices | definition on H, roots, subdivision | 5,242,880 vertices, 8,949,760 arcs |
+| Corollary 2, random, n = 6, 7, 9 | same, with arcs between components | 44,060,672 digraphs |
+| Corollary 1, chains with random paths | all (r, t) sampled | 162,604,272 |
+| Proposition, all path choices at every problem | the overwriting rule | all digraphs up to 4 vertices: 134,629; samples on 5, 6: 342,640 |
+| Local states and explicit parts | Section 5, marks, whole chain | 8,628 runs, up to 38 problems at once |
+| The same on real General Search paths | same | 8,717 runs, 21,549 passes |
+
+In the local simulation every value moves only by one-round exchanges, by (P) on checked parts, or by the Multi-Source Lemma as a black box. Over 4,666,614 applications of (P), every part was connected, each vertex lay in one part, and values stayed within 4 words. At most one mark crossed any dyadic middle. Passes took about 10 log² k applications of (P) for k up to 4096, and 26 to 50 Multi-Source runs. It could not build an instance that pushes too much through a hub: a hub off R contributes one pair (a, b), each p_t is a leaf of one A_a, and each a in Z sends at most one mark per level.
+
+Not reached by it: the insides of (P), Multi-Source, (T1), (T2), (S) and the identifiers, and the General Search Theorem itself.
 
 ## References
 

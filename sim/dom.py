@@ -87,14 +87,14 @@ def labels(k, A, B, m, st, mode):
         marks, routes = {}, []
         for a, t in first.items():
             j0, j1 = lam[lev, a], after[a]
-            if j0 is None or j1 is None or m[j0] > r or m[j0] <= m[j1] or t != X[j1]:
+            if j0 is None or j1 is None or (m[j0] >= r if mode == 'ringr' else m[j0] > r) or m[j0] <= m[j1] or (t != X[j1] and mode != 'nota'):
                 continue
             pos = g[t]
             if pos != m[j1]:
                 st['FAIL.mark_pos'] += 1
             if pos in marks:
                 st['FAIL.mark_twice'] += 1
-            marks[pos] = j0
+            marks[pos] = j1 if mode == 'markj1' else j0
             routes.append((pos, t))
             st['n.star_marks'] += 1
         routes.sort()
@@ -196,7 +196,7 @@ def path_step(Q, R, E, arcs, st, mode, check):
     st['max.k'] = max(st['max.k'], k)
     st['n.long_interval'] += sum(1 for j in m if m[j] > j + 1)
     st['n.past_B'] += sum(1 for j in m if m[j] <= k and A[m[j]] >= j)
-    if check and mode == 'ok':
+    if check and mode in ('ok', 'markj1', 'ringr', 'nota'):
         keyz = {}
         for i in range(k + 1):
             for z in (E if i == 0 else arcs.get(R[i - 1], ())):
@@ -447,6 +447,23 @@ def controls(seed, secs):
     return out
 
 
+RING = ['markj1', 'ringr', 'nota']
+
+
+def ring_controls(seed, secs):
+    """Controls of the rings, on the path step alone, where the internal checks see them."""
+    out = {}
+    for c in ['ok'] + RING:
+        rng = random.Random(seed)
+        st = collections.Counter()
+        t0 = time.time()
+        while time.time() - t0 < secs:
+            stress_path(rng, st, c)
+            st['runs'] += 1
+        out[c] = {k: int(st[k]) for k in sorted(st) if k.startswith('FAIL') or k in ('runs', 'n.star_marks')}
+    return out
+
+
 def scale():
     rng = random.Random(1)
     for name, make, sizes in (('jumps', lambda s: jumps(s, rng), (400, 1600, 6400)), ('bigrid', lambda s: gdfs.bigrid(s, s, .7, rng), (20, 40, 80)), ('ladder', gdfs.ladder, (200, 800, 3200))):
@@ -466,6 +483,8 @@ def scale():
 if __name__ == '__main__':
     if sys.argv[1] == 'ctl':
         print(json.dumps(controls(int(sys.argv[2]), float(sys.argv[3])), indent=0))
+    elif sys.argv[1] == 'ringctl':
+        print(json.dumps(ring_controls(int(sys.argv[2]), float(sys.argv[3]))))
     elif sys.argv[1] == 'scale':
         scale()
     else:
