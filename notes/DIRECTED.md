@@ -189,7 +189,7 @@ Negative controls, `sim/dirs.py ctl 8003 60`. Each breaks one rule of the proofs
 
 ## 8. Open
 
-- Õ(D) for depth-first search on digraphs. Two tree paths of a spanning tree are a balanced separator by [5, Theorem 3], but an out-forest need not span G, and a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. `notes/DAG_DFS.md` removes the first obstacle with connected classes, and the second on DAGs. The path separator of [7] does not settle it: it bounds strong components only, by encircling a directed cycle, and [7] then solves each strong component for every root, which we cannot do in Õ(D).
+- Õ(D) for depth-first search on digraphs. Two tree paths of a spanning tree are a balanced separator by [5, Theorem 3], but an out-forest need not span G, and a directed path can only be added from its first vertex reached by the owner, so a path may need many steps. `notes/DAG_DFS.md` removes the first obstacle with connected classes, and the second on DAGs. A separator that bounds strong components only is enough: [16, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [16] and [7] find these on planar digraphs in parallel, and we do not know how to do so in Õ(D).
 - Dominators of a planar digraph. Õ(D) on DAGs and integer ranks in topological order are in `notes/DAG_DFS.md`, which came after this note.
 
 ## 9. Record of the adversary
@@ -252,7 +252,7 @@ It did not reach a real decomposition of [1], a CONGEST simulation, the compress
 4. B. Jauregui, P. Montealegre, I. Rapaport. Deterministic Distributed DFS and Other Problems via Cycle Separators in Planar Graphs. arXiv:2504.21620.
 5. Y. Abd-Elhaleem, M. Dory, O. Weimann. A Simple Distributed Deterministic Planar Separator. arXiv:2602.22916.
 6. H. Le, H. Tierno, S. Yang. Planar Embedding of Okamura-Seymour Quasimetrics in Polynomial Time with an Application to Distributed SSSP. arXiv:2606.31192.
-7. E. Allender, A. Chauhan, S. Datta. Depth-First Search in Directed Planar Graphs, Revisited. MFCS 2021.
+7. E. Allender, A. Chauhan, S. Datta. Depth-First Search in Directed Planar Graphs, Revisited. MFCS 2021; Acta Informatica 2022, doi:10.1007/s00236-022-00425-1. ECCC TR20-074, revision 3, states that an earlier version claimed a stronger bound with an error in a lemma.
 8. A. Aggarwal, R. J. Anderson, M.-Y. Kao. Parallel depth-first search in general directed graphs. SIAM J. Comput. 19(2), 1990.
 9. M.-Y. Kao, P. N. Klein. Towards overcoming the transitive-closure bottleneck: efficient parallel algorithms for planar digraphs. J. Comput. System Sci. 47(3), 459-500, 1993.
 10. M. Ghaffari, G. Zuzic. Universally-Optimal Distributed Exact Min-Cut. arXiv:2205.14967.
@@ -261,3 +261,4 @@ It did not reach a real decomposition of [1], a CONGEST simulation, the compress
 13. J. T. Fineman. Nearly Work-Efficient Parallel Algorithm for Digraph Reachability. STOC 2018. arXiv:1711.01700.
 14. M.-Y. Kao, G. E. Shannon. Linear-Processor NC Algorithms for Planar Directed Graphs II: Directed Spanning Trees. SIAM J. Comput. 22(3), 460-481, 1993.
 15. M.-Y. Kao. Planar Strong Connectivity Helps in Parallel Depth-First Search. SIAM J. Comput. 24(1), 46-62, 1995.
+16. M.-Y. Kao. All Graphs Have Cycle Separators and Depth-First Search on Planar Digraphs is in DNC. Technical Report 244, Indiana University, 1988; AWOC 1988, LNCS 319, 53-63.

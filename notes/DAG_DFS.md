@@ -94,7 +94,7 @@ In step 5, each vertex of τ knows its position, and (P) over the class gives it
 
 ## 5. Topological order
 
-On a DAG take the search forest and n + 1 − post(v). Let (u, v) be an arc. Then v is not right of u, and v is no ancestor of u, since H has no cycle. So post(v) < post(u).
+On a DAG take the search forest and n − post(v), with post(v) counted from 0. Let (u, v) be an arc. Then v is not right of u, and v is no ancestor of u, since H has no cycle. So post(v) < post(u).
 
 For any digraph, run the algorithm on the condensation, which is a planar DAG, as follows. Compute identifiers of strong components by [1], and treat a component as one *point* of the problems. A problem is a union of components, and its root is a vertex of its root component. All reachability runs on H itself, since for a union R of components, reachability in H[R] agrees with reachability between components. The out-tree F of step 2 is a tree of H from the root, and (S) is applied with F to the underlying graph of D[K]. A directed path of H cannot return to a component that it has left, so the path of F to u gives a path of points π.
 
@@ -116,48 +116,71 @@ So Lemma 2(b) applies to each class with its part of its piece, with c = a, and 
 
 Two long lanes, no failure:
 
-| | `sim/dagdfs.py 9001 700` | `sim/dagdfs.py 9002 700 big` |
+| | `sim/dagdfs.py 9011 700` | `sim/dagdfs.py 9012 700 big` |
 |---|---|---|
-| Runs | 518,330 | 234,629 |
-| DAGs | 454,260 | 203,921 |
-| Replays of a real search | 550,315 | 249,924 |
-| Condensations run as DAGs | 31,985 | 15,295 |
-| Separators against 3/4 | 353,513 | 287,918 |
-| Classes against Lemma 3 | 2,095,011 | 1,894,339 |
-| Parts of τ for being contiguous | 327,534 | 283,806 |
-| Binary searches against a direct computation | 70,640 | 57,687 |
+| Runs | 571,865 | 256,454 |
+| DAGs | 501,497 | 223,109 |
+| Replays of a real search | 607,034 | 273,010 |
+| Condensations run as DAGs | 35,169 | 16,556 |
+| Separators against 3/4 | 388,539 | 314,527 |
+| Classes against Lemma 3 | 2,309,409 | 2,077,025 |
+| Parts of τ for being contiguous | 360,313 | 310,768 |
+| Binary searches against a direct computation | 77,654 | 62,843 |
 | Largest n | 219 | 349 |
 | Largest number of levels | 5 | 6 |
-| Largest number of passes per level, digraphs with cycles | 40 | 58 |
-| Largest component after a separator | 71% | 69% |
+| Largest number of passes per level, digraphs with cycles | 39 | 69 |
+| Largest component after a separator | 75% | 75% |
 
 All DAG runs stayed within two passes per level. The passes on digraphs with cycles stayed below the bound of the Small Components Theorem.
 
-Negative controls, `sim/dagdfs.py ctl 9003 60`. Each breaks one rule, and each is detected:
+Negative controls, `sim/dagdfs.py ctl 9013 60`. Each breaks one rule, and each is detected:
 
 | Control | Rule broken | Runs | What fired |
 |---|---|---|---|
-| `shallow` | shallow vertices of π come first | 20,453 | replay 9,281 |
-| `headfirst` | heads before the next vertex of π | 21,469 | replay 9,417 |
-| `revhead` | heads in the wrong order | 20,992 | replay 3,806 |
-| `onepath` | no step 5 | 16,835 | class too big 5,260, levels 59, replay 27 |
-| `firsthit` | the entry of greatest index in place of least | 19,593 | more than 2 passes on a DAG 823 |
+| `shallow` | shallow vertices of π come first | 20,622 | replay 9,324 |
+| `headfirst` | heads before the next vertex of π | 21,639 | replay 9,617 |
+| `revhead` | heads in the wrong order | 21,612 | replay 3,946 |
+| `onepath` | no step 5 | 19,339 | class too big 6,013, levels 48, replay 28 |
+| `firsthit` | the entry of greatest index in place of least | 24,837 | more than 2 passes on a DAG 1,108 |
 
-`sim/dagdfs.py scale`, on instances up to n = 6,400, gives at most 5 levels and 8 passes on grid DAGs, and at most 4 levels and 7 passes on stacked triangulations.
+`sim/sec5.py` on points, no failure:
+
+| | `sim/sec5.py 9021 700` | `sim/sec5.py 9022 700 big` |
+|---|---|---|
+| Runs | 359,307 | 176,412 |
+| Runs with cycles | 199,926 | 102,203 |
+| Checks of Lemma 5 | 1,415,828 | 1,181,470 |
+| Checks of Lemma 3 | 1,394,101 | 1,191,430 |
+| Step 5 in one round | 310,498 | 267,837 |
+| Numbers against the formula | 7,747,375 | 7,382,278 |
+| Arcs against the order | 21,521,536 | 21,402,571 |
+| Runs where τ re-enters a component | 6,062 | 3,053 |
+| Largest number of pieces | 10 | 10 |
+| Largest n | 212 | 352 |
+
+Negative controls, `sim/sec5.py ctl 9023 60`:
+
+| Control | Rule broken | Runs | What fired |
+|---|---|---|---|
+| `shallow` | shallow points of π come first | 30,196 | numbers 138,291, order 44,207, replay 40,492, Lemma 5 2 |
+| `idorder` | heads of a component ordered by identifier | 29,477 | numbers 13,111, order 340 |
+| `noround` | no step 5 | 28,103 | Lemma 3 3,040 |
+
+`sim/dagdfs.py scale`, on instances up to n = 6,400, gives at most 5 levels and 9 passes on grid DAGs, and at most 2 levels and 3 passes on stacked triangulations.
 
 ## 7. Not covered by the checks
 
 - Rounds, messages and who knows what: no CONGEST simulation. Reachability is computed directly.
 - The separator of the lanes is a fundamental cycle of a triangulation found by a central computation, not the protocol of [2]. (S), (P), (T1) and (T2) are read from [1] and [2] and from the earlier notes.
 - In `sim/dagdfs.py` the condensation runs as a DAG on the contracted graph, so it cannot see the two faults of Section 5. `sim/sec5.py` runs the form of Section 5 and its numbers, with reachability computed directly.
-- The separator of the lanes takes the best fundamental cycle, at most 71% against the 75% allowed. The lanes of Sections 9 and 10 reach 75%.
+- The separator of the lanes takes the best fundamental cycle of a triangulation. It reaches the 75% allowed.
 - Some counters of `sim/dagdfs.py` cannot detect a fault of the algorithm: `class_not_reached` and `block_not_reached`, since the group is defined as a reach, `block_no_progress`, `split_not_cover`, and `block_not_contiguous`, which holds for greedy classes under any key order. `topological` runs only after the replay passed, so it is then a theorem. No control exists for `bits`, `unbalanced`, `not_planar` or contiguity. About 12% of its runs have cycles.
 - [2] asks in Theorem 3 for vertex-disjoint connected subgraphs, but its multi-part proof is at sketch level, and we read it as stated. The referee reads the graph Ĝ of [3], which [2] uses, as non-planar when written literally for C the rim of a wheel, and planar when the edge is attached to the copy in its corner. We did not check this.
 - `lean/PlanarMatching/DagSearch.lean` proves Lemmas 1 and 2 in full and Fact 1, with no `sorry` and the three standard axioms, listed in `lean/axioms.txt`. Fact 1 is proved for a search defined as an inductive relation, with the numbers it assigns, and "right of" is shown to agree with these numbers. Every finite problem has a search tree, by recursion on classes (`exists_searchTree`), so the definition is not vacuous. Not in Lean: the separator (S), Lemmas 3 and 4, the forest with a virtual vertex, the count of rounds, Section 5 and all round bounds.
 
 ## 8. Open
 
-- Õ(D) for depth-first search of all planar digraphs. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. The path separator of [6] bounds strong components only, and [6] then solves each strong component for every root, which we cannot do in Õ(D).
+- Õ(D) for depth-first search of all planar digraphs. A bidirected path entered at its end shows that step 5 can take s rounds: each round adds one vertex. The undirected algorithm goes on along the longer side of the path, and a directed path has only one side. Aiming at the middle of τ keeps each piece of τ at half its length, but several pieces can then lie in one class, and one class takes one path per pass. A separator that bounds strong components only is enough: [11, Algorithm 10] extends a partial search tree by one path and one cycle per class, with one root per class and O(log n) passes per level, for all digraphs. So the problem reduces to a directed cycle or path through a strong component that leaves no heavy strong component. [11] and [6] find these on planar digraphs in parallel, and we do not know how to do so in Õ(D).
 - Dominators of a planar DAG.
 
 ## 9. Record of the adversary
@@ -215,8 +238,9 @@ It did not check the proofs of the tools, true rounds, the protocols of [2] and 
 3. M. Ghaffari, M. Parter. Near-Optimal Distributed DFS in Planar Graphs. DISC 2017.
 4. B. Jauregui, P. Montealegre, I. Rapaport. Deterministic Distributed DFS and Other Problems via Cycle Separators in Planar Graphs. arXiv:2504.21620.
 5. H. Le, H. Tierno, S. Yang. Planar Embedding of Okamura-Seymour Quasimetrics in Polynomial Time with an Application to Distributed SSSP. arXiv:2606.31192.
-6. E. Allender, A. Chauhan, S. Datta. Depth-First Search in Directed Planar Graphs, Revisited. MFCS 2021.
+6. E. Allender, A. Chauhan, S. Datta. Depth-First Search in Directed Planar Graphs, Revisited. MFCS 2021; Acta Informatica 2022, doi:10.1007/s00236-022-00425-1. ECCC TR20-074, revision 3, states that an earlier version claimed a stronger bound with an error in a lemma.
 7. A. Aggarwal, R. J. Anderson, M.-Y. Kao. Parallel depth-first search in general directed graphs. SIAM J. Comput. 19(2), 1990.
 8. V. Ashvinkumar, A. Bernstein, N. Cao, C. Grunau, B. Haeupler, Y. Jiang, D. Nanongkai, H.-H. Su. Parallel, Distributed, and Quantum Exact Single-Source Shortest Paths with Negative Edge Weights. arXiv:2303.00811.
 9. W. Schudy. Finding strongly connected components in parallel using O(log² n) reachability queries. SPAA 2008, 146-151.
 10. P. de la Torre, C. P. Kruskal. Fast parallel algorithms for all-sources lexicographic search and path-algebra problems. J. Algorithms 19(1), 1-24, 1995.
+11. M.-Y. Kao. All Graphs Have Cycle Separators and Depth-First Search on Planar Digraphs is in DNC. Technical Report 244, Indiana University, 1988; AWOC 1988, LNCS 319, 53-63.
