@@ -8,10 +8,7 @@ sys.dont_write_bytecode = True
 sys.setrecursionlimit(100000)
 import mm, fam
 
-try:
-    import networkx as nx
-except ImportError:
-    nx = None
+import networkx as nx
 
 
 def key(u, v):
@@ -34,8 +31,8 @@ def tight_arcs(cur, E, side, s, wt, match, y, wrong):
     return arcs
 
 
-def check_state(cur, E, side, s, wt, match, y, W, st):
-    """(D1), (D2), y in 0..W, and (D3) outside the roots: a free vertex with y > 0 is on side s."""
+def check_state(cur, E, side, H, wt, match, y, W, st):
+    """(I1), (I2), y in 0..W, and (I3): a free vertex with y > 0 is a root."""
     for u, v in E:
         if u in cur and v in cur:
             st['chk.feasible'] += 1
@@ -49,8 +46,9 @@ def check_state(cur, E, side, s, wt, match, y, W, st):
         st['chk.range'] += 1
         if not 0 <= y[v] <= W:
             st['FAIL.range'] += 1
-        if v not in match and y[v] > 0 and side[v] != s:
-            st['FAIL.free_other_side'] += 1
+        st['chk.I3'] += 1
+        if v not in match and y[v] > 0 and v not in H:
+            st['FAIL.I3'] += 1
 
 
 def unmatch_end(match, side, s, z):
@@ -76,10 +74,16 @@ def batch(iroot, V, E, side, s, cur, H, wt, W, match, y, rng, st, wrong, longste
             roots = [h for h in roots if y[h] > 1]
         if not roots:
             return flips, steps
+        st['chk.equal_theta'] += 1
+        if len({y[h] for h in roots}) > 1:
+            st['FAIL.equal_theta'] += 1
         arcs = tight_arcs(cur, E, side, s, wt, match, y, wrong)
         S = mm.multi_source_labels(iroot, V, arcs, roots, st)
         S &= cur
-        st['searches'] += 1
+        st['reach_sets'] += 1
+        st['chk.reach'] += 1
+        if S != reach(arcs, roots):
+            st['FAIL.reach'] += 1
         ends = [x for x in S if (side[x] != s and x not in match) or (side[x] == s and x in match and y[x] == 0)]
         if wrong == 'noswap':
             ends = [x for x in ends if side[x] != s]
@@ -87,7 +91,7 @@ def batch(iroot, V, E, side, s, cur, H, wt, W, match, y, rng, st, wrong, longste
             ends = [x for x in ends if side[x] == s]
         if ends:
             z = rng.choice(sorted(ends))
-            r = next(r for r in rng.sample(roots, len(roots)) if z in reach(arcs, r))
+            r = next(r for r in rng.sample(roots, len(roots)) if z in reach(arcs, [r]))
             p = mm.path_lemma(iroot, arcs, r, z, st)
             path_ok(p, arcs, st)
             unmatch_end(match, side, s, z)
@@ -114,11 +118,11 @@ def batch(iroot, V, E, side, s, cur, H, wt, W, match, y, rng, st, wrong, longste
                 elif wrong != 'oneside':
                     y[x] += d
             steps += 1
-        check_state(cur, E, side, s, wt, match, y, W, st)
+        check_state(cur, E, side, H, wt, match, y, W, st)
 
 
-def reach(arcs, r):
-    seen, stk = {r}, [r]
+def reach(arcs, rs):
+    seen, stk = set(rs), list(rs)
     while stk:
         for w in arcs.get(stk.pop(), ()):
             if w not in seen:
@@ -137,7 +141,7 @@ def small_weight(V, E, side, wt, W, rng, st, leaf=6, closure=False, inner=False,
             cur = C - hubs
             iroot = mm.build(X.V, X.E, rng, leaf=leaf, closure=inner)[0]
             phases = 0
-            for s in (0, 1):
+            for s in rng.sample((0, 1), 2):
                 H = {h for h in hubs if side[h] == s}
                 if not H:
                     continue
@@ -152,6 +156,8 @@ def small_weight(V, E, side, wt, W, rng, st, leaf=6, closure=False, inner=False,
                 if d > W:
                     st['FAIL.steps_bound'] += 1
                 phases += f + d
+                tag = 'max_dual_steps_in_batch' + ('_long' if longstep else '')
+                st[tag] = max(st[tag], d)
             st['max_phases_in_bag' + ('_long' if longstep else '')] = max(st['max_phases_in_bag' + ('_long' if longstep else '')], phases)
             st['max_hubs_in_bag'] = max(st['max_hubs_in_bag'], len(hubs))
     return match, y
@@ -170,7 +176,10 @@ def vertex_weight(V, E, side, pi, rng, st, leaf=6, closure=False, inner=False, w
                 cur.add(h)
                 arcs = mm.residual(cur, E, side, match, h)
                 S = mm.multi_source_labels(iroot, V, arcs, [h], st) & cur
-                st['searches'] += 1
+                st['reach_sets'] += 1
+                st['chk.reach'] += 1
+                if S != reach(arcs, [h]):
+                    st['FAIL.reach'] += 1
                 gains = {}
                 for x in S - {h}:
                     if side[x] != side[h] and x not in match:
@@ -217,13 +226,12 @@ def one_run(rng, st, big, wrong_s=None, wrong_v=None):
     name, (V, E) = fam.sample(rng, big)
     side = fam.two_colour(V, E)
     assert side is not None
-    if nx is not None:
-        g = nx.Graph()
-        g.add_nodes_from(V)
-        g.add_edges_from(E)
-        st['chk.planar'] += 1
-        if not nx.check_planarity(g)[0]:
-            st['FAIL.planar'] += 1
+    g = nx.Graph()
+    g.add_nodes_from(V)
+    g.add_edges_from(E)
+    st['chk.planar'] += 1
+    if not nx.check_planarity(g)[0]:
+        st['FAIL.planar'] += 1
     leaf = rng.choice([3, 4, 6, 10])
     closure = rng.choice([False, True, 'two'])
     inner = rng.choice([False, True, 'two'])
@@ -309,30 +317,32 @@ def spider(m):
 
 
 def chords(k, lam):
-    """Path a0 b1 a1 ... b_k, tight and flipped once, with chords a_{t-1} b_{t+1} of reduced length lam[t].
-    Returns all distances between path vertices before the flip, and d(b1, b_k) after it."""
+    """Path a0 b1 a1 ... b_k with chords a_{t-1} b_{t+1} of reduced length lam[t], and a free vertex b' with
+    an edge of slack 1 to a_{k-1}. Returns the distances between path vertices before the flip of the path,
+    and d(h', b') after it, with h' a new vertex with a tight edge to b1. All weights are in 0..L."""
     a = lambda i: 2 * i
     b = lambda i: 2 * i - 1
     path = [a(0)]
     for i in range(1, k):
         path += [b(i), a(i)]
     path.append(b(k))
-    side = {v: (v + 1) % 2 for v in path}
-    E, wt, y = [], {}, {v: 1 for v in path}
-    y[b(k)] = 0
-    for u, v in zip(path, path[1:]):
-        E.append((u, v))
-        wt[key(u, v)] = y[u] + y[v]
+    hh, bb = 2 * k, 2 * k + 1
+    L = sum(lam.values()) + 2
+    side = {v: v % 2 for v in path + [hh, bb]}
+    y = {v: (0 if side[v] else L) for v in side}
+    wt = {key(u, v): L for u, v in zip(path, path[1:])}
     for t in range(1, k):
-        E.append((a(t - 1), b(t + 1)))
-        wt[key(a(t - 1), b(t + 1))] = y[a(t - 1)] + y[b(t + 1)] - lam[t]
-    assert nx is None or nx.check_planarity(nx.Graph(E))[0]
+        wt[key(a(t - 1), b(t + 1))] = L - lam[t]
+    wt[key(a(k - 1), bb)] = L - 1
+    wt[key(hh, b(1))] = L
+    E = list(wt)
+    assert nx.check_planarity(nx.Graph(E))[0] and all(side[u] != side[v] and w >= 0 for (u, v), w in wt.items())
     match = {}
     for i in range(1, k):
         match[b(i)], match[a(i)] = a(i), b(i)
 
-    def dist(src):
-        arcs = mm.residual(set(path), E, side, match, a(0))
+    def dist(src, C):
+        arcs = mm.residual(C, E, side, match, a(0))
         d, pq = {src: 0}, [(0, src)]
         while pq:
             x, v = heapq.heappop(pq)
@@ -344,9 +354,10 @@ def chords(k, lam):
                         heapq.heappush(pq, (n, w))
         return d
 
-    before = {v: dist(v) for v in path}
+    C = set(path) | {bb}
+    before = {v: {w: x for w, x in dist(v, C).items() if w != bb} for v in path}
     mm.flip(match, path)
-    return before, dist(b(1)).get(b(k))
+    return before, dist(hh, C | {hh}).get(bb)
 
 
 def limits():
@@ -356,8 +367,8 @@ def limits():
     one, two = {t: 1 for t in range(1, k)}, {t: 2 + t for t in range(1, k)}
     b1, d1 = chords(k, one)
     b2, d2 = chords(k, two)
-    assert b1 == b2 and d1 == sum(one.values()) and d2 == sum(two.values()) and d1 != d2
-    return {'spider steps at m = 20': spider(20), 'labels equal': b1 == b2, 'after the flip': [d1, d2]}
+    assert b1 == b2 and d1 == sum(one.values()) + 1 and d2 == sum(two.values()) + 1 and d1 != d2
+    return {'spider steps at m = 20': spider(20), 'distances before the flip equal': b1 == b2, 'after the flip': [d1, d2]}
 
 
 if __name__ == '__main__':

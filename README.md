@@ -23,7 +23,7 @@ The question is how many rounds this takes. Two numbers matter:
 |---|---|---|
 | **Maximum matching, bipartite planar** | **Õ(D²)** | Õ(D³), implied by the classical separator method with one exact shortest-path run per insertion; Õ(D⁷), implied by the treewidth bound of [arXiv:2205.14897](https://arxiv.org/abs/2205.14897) |
 | Maximum weight matching, bipartite planar | Õ(D³) | Õ(D³), implied by the same method. New here is the complete proof, since the published one is deferred to a full version |
-| Maximum weight matching, bipartite planar, edge weights in {0,…,W} | Õ(D² + W·D), so Õ(D²) for W = Õ(D) | Õ(D³), implied by the same method |
+| Maximum weight matching, bipartite planar, edge weights in {0,…,W} | Õ(D² + W·D), so Õ(D²) for W = Õ(D) | Õ(min(W·D², D³)), implied by the same method and by [arXiv:cs/0011015](https://arxiv.org/abs/cs/0011015). The gain is largest at W = D, a factor D, and vanishes for polylogarithmic W and for W ≥ D² |
 | Maximum weight matching, bipartite planar, weights on the vertices, of any polynomial size | Õ(D²) | Õ(D³), implied by the same method |
 | Minimum vertex cover and maximum independent set, bipartite planar | Õ(D²) | Õ(D³), from the first row with König's theorem |
 | **Maximum matching, general planar**, zero error given the decomposition, with the Gallai-Edmonds sets | **Õ(D²)**, randomized | Õ(s\*), where s\* is the size of a maximum matching, [arXiv:2311.04140](https://arxiv.org/abs/2311.04140) |
