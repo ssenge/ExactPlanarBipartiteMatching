@@ -3,3 +3,4 @@ import PlanarMatching.Requests
 import PlanarMatching.Hungarian
 import PlanarMatching.Decomp
 import PlanarMatching.Tutte
+import PlanarMatching.DagSearch

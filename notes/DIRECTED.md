@@ -2,7 +2,7 @@
 
 **Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dirs.py`. Attacked by an independent AI pass on 3 Nov 2026: no theorem failed, and the corrections are listed in Section 9. The referee pass is still open, and no human has checked it. Importance: solid if it survives, since we found no earlier bound polynomial in D for depth-first search on digraphs.
 
-The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has a set of arcs on the edges of G, where an edge may carry no arc, one arc, or one arc in each direction. Paths and reachability are always in the digraph, and D is always the diameter of the undirected G. The tree of bags, (B1) to (B6) and Fact 1 are those of `notes/MATCHING.md`, Section 2.
+The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has a set of arcs on the edges of G, where an edge may carry no arc, one arc, or one arc in each direction. Paths and reachability are always in the digraph. In round bounds D is the diameter of the undirected G, and in the problems of Sections 3 and 4 it is their digraph. The tree of bags, (B1) to (B6) and Fact 1 are those of `notes/MATCHING.md`, Section 2.
 
 ## 1. Results
 
@@ -154,19 +154,19 @@ Two long lanes, no failure:
 | Largest number of steps | 191 | 323 |
 | Largest label ℓ of Section 3 | 66 | 64 |
 
-Negative controls, `sim/dirs.py ctl 4 8`. Each breaks one rule of the proofs, and each is detected:
+Negative controls, `sim/dirs.py ctl 8003 60`. Each breaks one rule of the proofs, and each is detected:
 
 | Control | Rule broken | Runs | What fired |
 |---|---|---|---|
-| `nostar` | sources off the separator are ignored | 2,684 | forest_cover 954, crash 395, not_reached 322 |
-| `randchild` | a hub takes its parent from a random child, not the least | 2,156 | forest_cycle 165 |
-| `crosslayer` | arcs between labels stay in the child problem | 2,229 | forest_cycle 10,273 |
-| `leafany` | a leaf takes any arc from a reached vertex as parent | 1,956 | forest_cycle 3,635 |
-| `minlabel` | λ off the separator by the least value, not the largest | 2,125 | order_arc 3,745 |
-| `hublayer` | μ is even outside blocks too | 2,182 | order_arc 10,967 |
-| `noblock` | vertices of a block off the separator are treated like the others | 2,002 | J_component 3,748, split 19,900, merged 788 |
-| `latest` | the latest owner in place of the earliest | 2,258 | C 248,141, replay 12,151 |
-| `firstchild` | the new path as first child | 2,277 | C 22,254, replay 2,350 |
+| `nostar` | sources off the separator are ignored | 21,347 | forest_cover 7,809, crash 2,942, not_reached 2,534, forest_cycle 345, hub_not_reached 270 |
+| `randchild` | a hub takes its parent from a random child, not the least | 15,774 | forest_cycle 1,319 |
+| `crosslayer` | arcs between labels stay in the child problem | 16,658 | forest_cycle 77,401 |
+| `leafany` | a leaf takes any arc from a reached vertex as parent | 17,092 | forest_cycle 30,111 |
+| `minlabel` | λ off the separator by the least value, not the largest | 17,979 | order_arc 31,051 |
+| `hublayer` | μ is even outside blocks too | 17,988 | order_arc 88,290 |
+| `noblock` | vertices of a block off the separator are treated like the others | 17,452 | J_component 35,399, split 170,084, merged 6,970 |
+| `latest` | the latest owner in place of the earliest | 19,341 | C 1,940,789, replay 104,168 |
+| `firstchild` | the new path as first child | 19,615 | C 234,141, replay 22,821 |
 
 ## 7. Not covered by the checks
 
@@ -191,7 +191,8 @@ An independent AI adversary tried to break Sections 2 to 5 on 3 Nov 2026, with i
 - Every tree of bags on connected planar graphs with n ≤ 4 and m ≤ 5, and with n = 5 and m = 4, with all digraphs, all sets A and all roots: 119,827 trees, 84,462,550 digraph runs, 1,531,210,388 forests, 433,549,776 searches and 704,282,412 checks of (C).
 - Lemmas 6, 8 and 9 on all digraphs with n ≤ 4, and 40,000 of the 1,048,576 digraphs with n = 5: 66,540,452 forests and 7,603,611 paths.
 - The literal bit search of Lemma 7: 115,867 random runs, with 4,043,547 runs of the Multi-Source Lemma and 1,682,229 checks of owners.
-- On region bags with up to 369 network vertices and D up to 32: 2,138 runs with at most 77 steps. The step bound for a level was reached and never exceeded.
+- On region bags with up to 924 network vertices and D up to 52: 3,014 runs with at most 144 steps, and at most 50 at one level. The step bound for a level was reached and never exceeded. Hubs stayed at 3, edges at 2 bags of a level, and no bag was disconnected, unlike the bags of `sim/mm.py`.
+- What the note says is sent was enough: views built only from those messages matched the direct computation on 238,432 forest bags and 105,044 order bags.
 
 It reported these flaws in the wording, all corrected above:
 
@@ -202,7 +203,7 @@ It reported these flaws in the wording, all corrected above:
 - "A white vertex reaches only white vertices" needs "through vertices outside T".
 - (T2) gave only the pre-order formula. The adversary checked both formulas on 80,296 vertices.
 
-It also proposed a rule that removes the dependence on [2, Lemma 3], called `selfcomp` in its code. A vertex x off S_X lies in a block if and only if some a in In(x,Y_j) ∩ S_X and b in Out(x,Y_j) ∩ S_X have b = a or b reaching a in J. Take the least identifier of a hub in the component of J as the identifier of the block, and replace (∗) by: the strong components of D′_j on X_j are strong components of D. The rule had no failure in the runs finished so far. The labels then identify the strong components, and the Order Theorem no longer uses [2, Lemma 3]. We state this as a remark and keep the proof of Section 4.
+It also proposed a rule that removes the dependence on [2, Lemma 3], called `selfcomp` in its code. A vertex x off S_X lies in a block if and only if some a in In(x,Y_j) ∩ S_X and b in Out(x,Y_j) ∩ S_X have b = a or b reaching a in J. Take the least identifier of a hub in the component of J as the identifier of the block, and replace (∗) by: the strong components of D′_j on X_j are strong components of D. The rule had no failure on 2,796,800 digraph runs, with 57,893,615 checks of (C). The labels then identify the strong components, and the Order Theorem no longer uses [2, Lemma 3]. We state this as a remark and keep the proof of Section 4.
 
 It did not reach a real decomposition of [1], a CONGEST simulation of part-wise aggregation, shortcuts or the compression of [2], the proofs of [2], or literature claims. Trees on K₄ and larger graphs are sampled.
 

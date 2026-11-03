@@ -2,7 +2,7 @@
 
 **Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/dagdfs.py`. Not yet refereed and not yet attacked, and no human has checked it. Importance: solid if it survives, since the bound is optimal up to polylogarithmic factors for a basic problem, and we found no earlier bound polynomial in D for it.
 
-The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G, an edge may carry no arc, one arc, or one arc in each direction, and D is always the diameter of the undirected G. This note builds on `notes/DIRECTED.md`.
+The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. A *digraph on G* has its arcs on edges of G, an edge may carry no arc, one arc, or one arc in each direction. In round bounds D is the diameter of the undirected G, and in D[K] it is the digraph of Sections 3 and 4. Identifiers are distinct. This note builds on `notes/DIRECTED.md`.
 
 ## 1. Results
 
@@ -28,31 +28,31 @@ From `notes/DIRECTED.md`: labels on any digraph (T1), trees (T2), the Out-Forest
 
 An *ordered tree* has an order on the children of each vertex. A vertex b is *right of* a if pre(b) > pre(a) and post(b) > post(a). A *search tree* of D[K] from x is an ordered tree on K with root x and with arcs of D such that no arc of D[K] goes from a vertex to a vertex right of it.
 
-**Fact 1.** A search tree is the result of a real depth-first search that at each vertex visits its children in order and then scans its other arcs. This is Lemma 9 of `notes/DIRECTED.md`: when the search scans the other arcs of a, it has visited the subtree of a and everything before a in pre-order, so an unvisited head would be right of a.
+**Fact 1.** A search tree of D[K] is the result of a real depth-first search of D[K] that at each vertex visits its children in order and then scans its other arcs. At the top level K is closed under arcs of H, so this is a search of H. This is Lemma 9 of `notes/DIRECTED.md`: when the search scans the other arcs of a, it has visited the subtree of a and everything before a in pre-order, so an unvisited head would be right of a.
 
 ## 3. The Split Lemma
 
-Let D be a digraph, x a vertex and K a set in which every vertex is reached from x in D[K]. Let π = (v_0, ..., v_k) be a path in D[K] with v_0 = x, and R = K ∖ V(π). Give the arc (v_i, z) with z in R the key (k − i, id(z)). So deeper vertices of π come first. A *head* is a vertex z of R that receives such an arc, and its key is the least key among these arcs. For y in R let e(y) be the least key of a head that reaches y in D[R]. The *class* of a head z is K_z = {y : e(y) = key(z)}, and it counts only if z is in it. Let p(z) be the tail of the arc that gives z its key.
+Let D be a digraph, x a vertex and K a set in which every vertex is reached from x in D[K]. Let π = (v_0, ..., v_k) be a path in D[K] with v_0 = x, and R = K ∖ V(π). Give the arc (v_i, z) with z in R the key (k − i, id(z)). So deeper vertices of π come first. A *head* is a vertex z of R that receives such an arc, and its key is the least key among these arcs. For y in R let e(y) be the least key of a head that reaches y in D[R]. The *class* of a head z is K_z = {y : e(y) = key(z)}, and it counts only if z is in it. One that does not is empty, by the proof of (a), so this only drops empty sets. Let p(z) be the tail of the arc that gives z its key.
 
-**Lemma 1 (split).** (a) The classes partition R, and every vertex of K_z is reached from z in D[K_z]. (b) If (y, y′) is an arc of D[R], then e(y′) ≤ e(y). (c) Let T_z be a search tree of D[K_z] from z for each class. Let τ consist of π, the arc (p(z), z) and T_z for each class, where the children of v_i are v_{i+1} first and then its heads z in the order of id(z). Then τ is a search tree of D[K] from x.
+**Lemma 1 (split).** (a) The classes partition R, and every vertex of K_z is reached from z in D[K_z]. (b) If (y, y′) is an arc of D[R], then e(y′) ≤ e(y). (c) Let T_z be a search tree of D[K_z] from z for each class. Let τ consist of π, the arc (p(z), z) and T_z for each class, where the children of v_i are v_{i+1} first and then the heads z with p(z) = v_i whose class counts, in the order of id(z). Then τ is a search tree of D[K] from x.
 
 *Proof.* (b) A head that reaches y reaches y′.
 
 (a) Let y be in R. A path from x to y has a last vertex v_i on π, and its next vertex is a head that reaches y in D[R]. So e(y) exists. Let e(y) = key(z), and let w be on a path from z to y in D[R]. Then e(w) ≤ key(z) since z reaches w, and e(y) ≤ e(w) by (b), so e(w) = key(z). So the path stays in K_z. With w = z, z is in its own class.
 
-(c) Let (a, b) be an arc of D[K]. We show that b is not right of a.
+(c) By (a) each vertex of R lies in one class that counts, and each head of such a class has one parent p(z), so τ is an ordered tree on K with arcs of D. Let (a, b) be an arc of D[K]. We show that b is not right of a.
 
 - a = v_i and b on π: b is an ancestor or a descendant of a.
-- a = v_i and b in R: (v_i, b) has key (k − i, id(b)), so b lies in a class of key at most this. Its head z has p(z) = v_j with j ≥ i, and if j = i, then id(z) ≤ id(b). If j > i, then b is below v_{i+1}. If j = i, then b is below v_i. Either way b is a descendant of a.
+- a = v_i and b in R: (v_i, b) has key (k − i, id(b)), so b lies in a class of key at most this. Its head z has p(z) = v_j with j ≥ i. If j > i, then b is below v_{i+1}. If j = i, then b is below v_i. Either way b is a descendant of a.
 - a in the class of z with p(z) = v_i, and b = v_j on π: if j ≤ i then b is an ancestor of a. If j > i then b is below v_{i+1}, the first child of v_i, so b comes before a in pre-order and is not right of it.
 - a and b in R, in one class: T_z is a search tree, and "right of" is the same in T_z and τ.
 - a in the class of z and b in the class of z′ ≠ z: by (b) key(z′) < key(z). If p(z′) = v_j and p(z) = v_i, then j ≥ i, and j > i puts z′ below v_{i+1}, the first child of v_i, while j = i puts z′ before z among the children of v_i. Either way the subtree of z′ comes wholly before the subtree of z, so b is not right of a. ∎
 
 A forest is the same lemma with π a single virtual vertex that has an arc to each root, where the identifier of a root fixes the order of the roots.
 
-**Lemma 2 (blocks).** Let τ = (s_1, ..., s_m) be a path in D[R]. (a) Each class holds a contiguous part of τ. (b) Let (z, K_z) be a class with part β = (s_a, ..., s_b). If z is in β, let s_k = z. Otherwise let Z be the set reached from z in D[K_z ∖ β], and s_k the vertex of β of least index with an arc from Z. Then s_k exists, and there is a path π′ from z that goes through Z to s_k, or starts at s_k = z, and goes on along β to s_b. For a ≤ ℓ < k, the vertices s_ℓ and s_k lie in one strong component of D[K_z]. On a DAG therefore k = a.
+**Lemma 2 (blocks).** Let τ = (s_1, ..., s_m) be a path in D[R]. (a) Each class holds a contiguous part of τ. (b) Let τ be simple, and (z, K_z) a class with nonempty part β = (s_a, ..., s_b). If z is in β, let s_k = z. Otherwise let Z be the set reached from z in D[K_z ∖ β], and s_k the vertex of β of least index with an arc from Z. Then s_k exists, and there is a path π′ from z that goes through Z to s_k, or starts at s_k = z, and goes on along β to s_b. For a ≤ ℓ < k, the vertices s_ℓ and s_k lie in one strong component of D[K_z]. On a DAG therefore k = a.
 
-*Proof.* (a) By Lemma 1(b), keys do not increase along τ. (b) z reaches β in D[K_z], and the first vertex of β on such a path has an arc from Z, or is z. π′ is a path, since Z avoids β. For the rest, take ℓ < k. A path from z to s_ℓ first meets β at some s_{k′}, and k′ ≥ k by the choice of k, or s_{k′} = z = s_k. So s_{k′} reaches s_ℓ, s_ℓ reaches s_k along β, and s_k reaches s_{k′} along β. ∎
+*Proof.* (a) By Lemma 1(b), keys do not increase along τ. (b) z reaches β in D[K_z], and the first vertex of β on such a path has an arc from Z, or is z. π′ is a path: take a simple path through Z, which avoids β, and τ is simple. For the rest, take ℓ < k. A path from z to s_ℓ first meets β at some s_{k′}, and k′ ≥ k by the choice of k, or s_{k′} = z = s_k. So s_{k′} reaches s_ℓ, s_ℓ reaches s_k along β, and s_k reaches s_{k′} along β. ∎
 
 So if π′ goes into Lemma 1 for the class K_z, what is left of τ in K_z is the path (s_a, ..., s_{k−1}), and part (a) applies again. Each round shortens each part by at least one, and after the first round what is left of a part has at most s − 1 vertices, if strong components have at most s. So at most s rounds absorb all of τ, and on a DAG one round does.
 
@@ -134,7 +134,7 @@ Negative controls, `sim/dagdfs.py ctl 9003 60`. Each breaks one rule, and each i
 - Rounds, messages and who knows what: no CONGEST simulation. Reachability is computed directly.
 - The separator of the lanes is a fundamental cycle of a triangulation found by a central computation, not the protocol of [2]. (S), (P), (T1) and (T2) are read from [1] and [2] and from the earlier notes.
 - For the condensation the lanes run the DAG on the contracted graph, with separators on that graph. The form of Section 5, with F and (S) on the graph of H, is not run.
-- Nothing here is in Lean.
+- `lean/PlanarMatching/DagSearch.lean` proves Lemmas 1 and 2 in full and Fact 1, with no `sorry` and the three standard axioms, listed in `lean/axioms.txt`. Fact 1 is proved for a search defined as an inductive relation, with the numbers it assigns, and "right of" is shown to agree with these numbers. Every finite problem has a search tree, by recursion on classes (`exists_searchTree`), so the definition is not vacuous. Not in Lean: the separator (S), Lemmas 3 and 4, the forest with a virtual vertex, the count of rounds, Section 5 and all round bounds.
 
 ## 8. Open
 

@@ -30,4 +30,4 @@ Section 9 of `notes/MATCHING.md` and in `sim/REPORT.md`.
   proofs, not round counts. Run `python3 -I sim/run.py <seed> <seconds> [big]`, `python3 -I sim/run.py path <seed> <seconds> [big]`
   and `python3 -I sim/run.py ctl <seed> <seconds>`. With `networkx` installed, every instance is also checked for planarity.
   Results: `sim/REPORT.md`.
-- `lean/`: the combinatorial core, and in `PlanarMatching/Tutte.lean` the single-step algebra of `notes/GENERAL.md`, no `sorry`. `lake build` needs Mathlib at the pinned revision; axioms in `lean/axioms.txt`.
+- `lean/`: the combinatorial core, in `PlanarMatching/Tutte.lean` the single-step algebra of `notes/GENERAL.md`, and in `PlanarMatching/DagSearch.lean` the Split Lemma, the block lemma and Fact 1 of `notes/DAG_DFS.md`, no `sorry`. `lake build` needs Mathlib at the pinned revision; axioms in `lean/axioms.txt`.
