@@ -7,6 +7,8 @@ python3 -I gm.py SEED SECS [big]    main lane
 python3 -I gm.py ctl SEED SECS      negative controls
 python3 -I gm.py region SEED SECS   region bags of the sibling repository, with hierarchy checks
 python3 -I gm.py scale              words on grids with diagonals, on region bags
+python3 -I gm.py tw SEED SECS       Section 6: low treewidth, many children per bag, with the filter
+python3 -I gm.py twctl SEED SECS    controls of the filter
 """
 import collections, json, os, random, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -126,7 +128,7 @@ class Fact:
     __slots__ = ('J', 'piv', 'out')
 
 
-def eliminate(h, own, a, root, active, st, p=P, mode='ok'):
+def eliminate(h, own, a, root, active, st, p=P, mode='ok', flt=False, rng=None):
     """Bottom-up over the subtree of root, on the active vertices. Returns the facts per bag, pivots and dropped."""
     facts, pivots, dropped = {}, [], []
     out = {}
@@ -154,6 +156,27 @@ def eliminate(h, own, a, root, active, st, p=P, mode='ok'):
         st['max.words_in_bag'] = max(st['max.words_in_bag'], words)
         interior = [i for i, v in enumerate(J) if v not in h.Qp[b]]
         bnd = [i for i, v in enumerate(J) if v in h.Qp[b]]
+        if flt and h.kids[b]:
+            # Section 6: rows retained by children are zero on each other, so a basis on the rest suffices
+            Rr = [i for i in interior if J[i] not in h.S[b]]
+            others = [i for i in range(len(J)) if i not in set(Rr)]
+            if Rr:
+                if M[np.ix_(Rr, Rr)].any():
+                    st['FAIL.retained_block_not_zero'] += 1
+                st['max.R_before_filter'] = max(st['max.R_before_filter'], len(Rr))
+                k0 = indep_rows(M[np.ix_(Rr, others)], p) if others else []
+                st['max.R_after_filter'] = max(st['max.R_after_filter'], len(k0))
+                if len(k0) > len(others):
+                    st['FAIL.filter_above_bag'] += 1
+                if mode == 'fltbad' and k0:
+                    k0 = k0[:-1]
+                gone = [Rr[i] for i in range(len(Rr)) if i not in set(k0)]
+                dropped += [J[i] for i in gone]
+                M[gone, :] = 0
+                M[:, gone] = 0
+                goneset = set(gone)
+                interior = [i for i in interior if i not in goneset]
+                st['chk.filter'] += 1
         rem, zero, piv = list(interior), [], []
         while rem:
             i = rem.pop(0)
@@ -521,21 +544,21 @@ def sample(rng, big=False):
 
 
 # ---------------------------------------------------------------- one instance
-def run_one(V, E, h, rng, st, p=P, mode='ok'):
+def run_one(V, E, h, rng, st, p=P, mode='ok', planar=True, flt=False):
     E = sorted({(min(e), max(e)) for e in E if e[0] != e[1]})
     n = len(V)
     G = nx.Graph()
     G.add_nodes_from(V)
     G.add_edges_from(E)
-    if not nx.check_planarity(G)[0]:
+    if planar and not nx.check_planarity(G)[0]:
         st['FAIL.not_planar'] += 1
-    st['chk.planar'] += 1
+    st['chk.planar'] += int(planar)
     adj = {v: sorted(G[v]) for v in V}
     own = assign_edges(h, E, st)
     if {e for es in own.values() for e in map(lambda x: (min(x), max(x)), es)} != set(E):
         st['FAIL.edges_lost'] += 1
     a = {e: (1 if mode == 'unit' else rng.randrange(1, p)) for e in E}
-    facts, pivots, dropped = eliminate(h, own, a, h.root, set(V), st, p, mode if mode in ('noretain', 'noschur') else 'ok')
+    facts, pivots, dropped = eliminate(h, own, a, h.root, set(V), st, p, mode if mode in ('noretain', 'noschur', 'fltbad') else 'ok', flt)
     if set(pivots) | set(dropped) != set(V) or set(pivots) & set(dropped):
         st['FAIL.not_a_partition'] += 1
     nu = len(nx.max_weight_matching(G, maxcardinality=True))
@@ -564,7 +587,7 @@ def run_one(V, E, h, rng, st, p=P, mode='ok'):
             st['FAIL.not_a_matching'] += 1
     if len(mate) != r:
         st['FAIL.matching_size'] += 1
-    if mode in ('nocorr', 'anyedge', 'noretain', 'noschur'):
+    if mode in ('nocorr', 'anyedge', 'noretain', 'noschur', 'fltbad'):
         return
     cert = certificate(h, own, a, E, B, adj, n, len(mate) // 2, st, rng, p, mode)
     if cert is None:
@@ -625,6 +648,104 @@ def controls(seed, secs):
             run_one(V, E, h, rng, st, p, m)
         out[mode] = {k: int(v) for k, v in st.items() if k.startswith('FAIL') or k == 'runs'}
     return out
+
+
+# ---------------------------------------------------------------- low treewidth, Section 6
+def partial_ktree(n, k, rng, drop):
+    n = max(n, k + 2)
+    E, cliques = set(), [tuple(range(k + 1))]
+    for i in range(k + 1):
+        for j in range(i):
+            E.add((j, i))
+    for v in range(k + 1, n):
+        c = rng.choice(cliques)
+        sub = rng.sample(c, k)
+        for u in sub:
+            E.add((min(u, v), max(u, v)))
+        cliques.append(tuple(sub) + (v,))
+    return fam.largest(set(range(n)), [e for e in sorted(E) if rng.random() >= drop])
+
+
+def hub_pieces(k, m, rng):
+    """k hubs and many small odd or even pieces, each joined to several hubs: many children of one bag."""
+    E, nxt = [(i, i + 1) for i in range(k - 1)], k
+    for _ in range(m):
+        t = rng.randrange(1, 5)
+        ps = list(range(nxt, nxt + t))
+        nxt += t
+        E += [(ps[i], ps[i + 1]) for i in range(t - 1)]
+        for h_ in rng.sample(range(k), rng.randrange(1, k + 1)):
+            E.append((h_, rng.choice(ps)))
+    return fam.largest(set(range(nxt)), [(min(e), max(e)) for e in E])
+
+
+def build_tw(V, E, rng, leaf, width):
+    """The strategy of arXiv:2205.14897, Section 3: S from the part G', children are components of G' - S with
+    their edges to the bag. A leaf holds all its vertices."""
+    adj = {v: set() for v in V}
+    for u, v in E:
+        adj[u].add(v)
+        adj[v].add(u)
+    Vs, Ss, kids, parent, depth, cnt = {}, {}, {}, {}, {}, [0]
+    stack = [(set(V), set(), None, 0)]
+    while stack:
+        part, bp, par, d = stack.pop()
+        b = cnt[0]
+        cnt[0] += 1
+        Vs[b] = part | {u for u in bp if adj[u] & part}
+        parent[b], depth[b], kids[b] = par, d, []
+        if par is not None:
+            kids[par].append(b)
+        if len(part) <= leaf:
+            Ss[b] = set(part)
+            continue
+        deg = sorted(part, key=lambda v: (-len(adj[v] & part), rng.random()))
+        S = set(deg[:rng.randrange(1, width + 1)])
+        Ss[b] = S
+        B = (bp & Vs[b]) | S
+        seen = set(S)
+        for r in sorted(part - S):
+            if r in seen:
+                continue
+            seen.add(r)
+            comp, st_ = {r}, [r]
+            while st_:
+                x = st_.pop()
+                for y in adj[x] & part:
+                    if y not in seen:
+                        seen.add(y)
+                        comp.add(y)
+                        st_.append(y)
+            stack.append((comp, B, b, d + 1))
+    return H(Vs, Ss, kids, parent, depth, 0)
+
+
+def sample_tw(rng):
+    k = rng.randrange(4)
+    if k == 0:
+        return 'ktree', partial_ktree(rng.randrange(6, 90), rng.randrange(1, 7), rng, rng.choice([0, 0.2, 0.5]))
+    if k == 1:
+        return 'hubs', hub_pieces(rng.randrange(1, 9), rng.randrange(1, 40), rng)
+    if k == 2:
+        return 'k2m', fam.k2m(rng.randrange(1, 60), rng)
+    return 'stacked', stacked_drop(rng.randrange(5, 80), rng, rng.choice([0, 0.3, 0.6]))
+
+
+def tw_lane(seed, secs, mode='ok'):
+    rng = random.Random(seed)
+    st = collections.Counter()
+    t0 = time.time()
+    while time.time() - t0 < secs:
+        name, (V, E) = sample_tw(rng)
+        if len(V) < 2:
+            continue
+        h = build_tw(V, E, rng, rng.choice([1, 2, 4, 8]), rng.choice([1, 2, 3, 6]))
+        st['fam.' + name] += 1
+        st['max.n'] = max(st['max.n'], len(V))
+        st['max.bag_B'] = max(st['max.bag_B'], max(len(h.V[b] & (h.Qp[b] | h.S[b])) for b in h.V))
+        st['max.children'] = max(st['max.children'], max(len(x) for x in h.kids.values()))
+        run_one(V, E, h, rng, st, P, mode, planar=False, flt=True)
+    return {k: int(v) for k, v in st.items()}
 
 
 # ---------------------------------------------------------------- region bags
@@ -739,6 +860,11 @@ if __name__ == '__main__':
         print(json.dumps(controls(int(a[1]), float(a[2])), indent=0, sort_keys=True))
     elif a[0] == 'region':
         print(json.dumps(region_lane(int(a[1]), float(a[2]), len(a) > 3), indent=0, sort_keys=True))
+    elif a[0] == 'tw':
+        print(json.dumps(tw_lane(int(a[1]), float(a[2])), indent=0, sort_keys=True))
+    elif a[0] == 'twctl':
+        r = tw_lane(int(a[1]), float(a[2]), 'fltbad')
+        print(json.dumps({k: v for k, v in r.items() if k.startswith('FAIL') or k == 'runs'}, sort_keys=True))
     elif a[0] == 'scale':
         for row in scale():
             print(json.dumps(row))

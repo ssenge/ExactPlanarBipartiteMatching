@@ -1,8 +1,8 @@
-# Exact maximum matching in general planar networks
+# Exact maximum matching in general planar and low-treewidth networks
 
-**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. Not yet refereed and not yet attacked, and no human has checked it. It uses the region bags of [6], `notes/LEMMA15.md`, Section 9, and not the Label Hypothesis. Importance if it survives: solid, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction.
+**Status.** Claim, written 3 Nov 2026. Proofs below, simulation in `sim/gm.py`, results in `sim/REPORT_GENERAL.md`. Not yet refereed and not yet attacked, and no human has checked it. It uses the region bags of [6], `notes/LEMMA15.md`, Section 9, and not the Label Hypothesis. Importance if it survives: significant, since this is the first bound polynomial in D alone that we found for matching without the bipartite restriction on planar networks, and for treewidth τ it removes the bipartite restriction of [4, Theorem 4] and improves its bound.
 
-The model is CONGEST on a connected planar network G with n vertices and hop diameter D, with a known embedding. Õ hides factors polylogarithmic in n. Words have O(log n) bits, and local computation is unbounded.
+The model is CONGEST on a connected network G with n vertices and hop diameter D, planar with a known embedding except in Section 6. Õ hides factors polylogarithmic in n. Words have O(log n) bits, and local computation is unbounded.
 
 ## 1. Results
 
@@ -10,9 +10,11 @@ The model is CONGEST on a connected planar network G with n vertices and hop dia
 
 **Certificate Theorem.** In a further Õ(D²) rounds every vertex learns whether it lies in the Gallai-Edmonds sets D(G), A(G) or C(G), correctly with high probability, and the network checks with no error whether M and A(G) satisfy the Tutte-Berge equality. So exact maximum matching has a zero-error algorithm with Õ(D²) rounds with high probability: on a failed check it starts again with new randomness.
 
+**Treewidth Theorem.** Let G be a network of treewidth τ, not necessarily planar. With high probability, in Õ(τ³D + τ⁵) rounds every vertex learns its mate in a maximum matching of G and its Gallai-Edmonds set.
+
 **Linear Algebra Lemma.** Let a matrix over F_p, p = n^{O(1)}, be symmetric or alternating, and have nonzero entries only on the diagonal and on edges of G, with each entry known to its row and column vertices. In Õ(D²) rounds the network computes its rank, a set B of size equal to the rank with nonsingular principal submatrix, and a factorization stored at the centres of the bags, after which each system on B is solved in Õ(D) rounds, every vertex learning its coordinate.
 
-**Context.** For exact matching without the bipartite restriction the bounds we found depend on the matching size: Õ(s\*) rounds [2], randomized, and Õ(s\*^{3/2}) before that [1]. For treewidth τ, [4, Theorem 4] gives Õ(τ⁴D + τ⁷) for bipartite graphs, and states that the idea behind it is incorrect for general graphs, since a shortest 2-coloured walk need not be simple. For D well below the square root of s\*, the General Matching Theorem improves on [2] on planar networks. For bipartite planar networks, the Matching Theorem in `notes/MATCHING.md` has the same bound and is deterministic relative to the decomposition, while this note is randomized and simpler. Lower bound: two even paths, as in `notes/MATCHING.md`, give Ω(D). Three literature searches found no earlier exact bound for general planar networks that is polynomial in D alone; that is not proof that none exists.
+**Context.** For exact matching without the bipartite restriction the bounds we found depend on the matching size: Õ(s\*) rounds [2], randomized, and Õ(s\*^{3/2}) before that [1]. For treewidth τ, [4, Theorem 4] gives Õ(τ⁴D + τ⁷) for bipartite graphs, and states that the idea behind it is incorrect for general graphs, since a shortest 2-coloured walk need not be simple. The Treewidth Theorem improves this bound by a factor τ in its first term and τ² in its second, on all graphs. For D well below the square root of s\*, the General Matching Theorem improves on [2] on planar networks. For bipartite planar networks, the Matching Theorem in `notes/MATCHING.md` has the same bound and is deterministic relative to the decomposition, while this note is randomized and simpler. Lower bound: two even paths, as in `notes/MATCHING.md`, give Ω(D). Four literature searches found no earlier exact bound for general planar networks that is polynomial in D alone, and no improvement on [4, Theorem 4]; that is not proof that none exists.
 
 The method is sequential work carried over to CONGEST. [3] finds maximum matchings of planar graphs by nested dissection on the Tutte matrix, and [5] performs Gaussian elimination with pivoting on matrices of low treewidth and finds a maximum matching in O(k⁴n log n) operations for treewidth k. What is new here is the distributed form: the elimination below moves Õ(D²) words per bag, a singular interior block is handled by keeping at most |∂X| further indices, and mates are found with one column per step instead of a new factorization. The certificate gives a zero-error algorithm, which we did not find in [3] or [5].
 
@@ -117,22 +119,49 @@ Let N = V ∖ B. Each d ∈ N draws z_d uniformly in F_p. Set y_N = z, and y_B =
 
 The proof nowhere uses that the matching graph is all of G: it works for any subgraph of the network, which also gives the region lane of the simulator its deficient instances.
 
-## 6. Checks
+## 6. Treewidth τ
 
-`sim/gm.py` builds the hierarchy, runs the elimination, the solves, the search and the certificate by message passing bag by bag, and compares against an independent blossom algorithm, an independent rank of the whole matrix, and, for small n, brute-force D(G). `sim/gm.py region` runs on the region bags of [6] and checks the part of (H3) and (H5) that the round count uses. Results are in `sim/REPORT_GENERAL.md`. Negative controls in `sim/gm.py ctl`.
+Here G need not be planar, and we replace the region bags by the decomposition of [4].
 
-## 7. Not covered by the checks
+- (T1) [4, Theorem 1 and Lemma 13]. In Õ(τ²D + τ³) rounds, with high probability, we get a rooted tree of depth O(log n). A node x has a connected subgraph G_x, the part G′_x = G_x − B_{p(x)}, connected too, and S_x ⊆ V(G′_x), of size O(τ²). The bag is B_x = (V(G_x) ∩ B_{p(x)}) ∪ S_x, of size at most t = O(τ² log n). The children of x are the components of G′_x − S_x, each with its edges to B_x. At a leaf, S_x = V(G′_x). Each vertex knows its bags.
+- (T2) [4, Lemma 9, Corollary 3]. The G_x of one depth form a near disjoint collection, on which h sums or h broadcasts take Õ(τD + hτ) rounds with high probability.
+
+The home of v is the first x with v ∈ S_x. Fact 1 holds: the proof of [4, Lemma 13] shows that the homes of an edge are comparable, and that the end with the shallower home lies in the bag of the deeper one. So edges are assigned as in Section 2, and the two ends of an edge of O_x lie in B_x, with one end in G′_x. Sections 3 to 5 hold with ∂x = V(G_x) ∩ B_{p(x)}, except for the rounds, since (1) fails: a bag can have many children, each with up to t boundary vertices and t retained rows. Two changes repair this.
+
+*Sums per entry.* Children only add on boundary indices. For u, w ∈ B_x the entry of M_x is the sum of M″_C[u,w] over children C, plus the entry of an edge of O_x. One vertex of G′_C, its least identifier, inputs each value of C. So t² sums suffice, whatever the number of children.
+
+*A filter for retained rows.* Let R be the union of the sets I″_C. Rows of R are zero on R: inside one child by Lemma 1, and between two children since their interior indices share no entry. So each row of R is a vector on B_x, of t words, and any row in the span of other rows of R can be dropped, by the argument of Lemma 1. To find a basis R₀, repeat at most t + 1 times: the holder of each row tests it against the span of the rows broadcast so far, one aggregation finds the least identifier outside the span, and its holder broadcasts its t words. This costs Õ(τD + tτ) per iteration. So |R₀| ≤ t.
+
+Then every vertex of G_x knows M_x on R₀ ∪ B_x, and all of them apply Lemma 1 with the same deterministic rule. So every vertex of G_x knows P_x, I″_x and M″_x. This is what the holders use at the parent. Each depth costs
+
+    t·Õ(τD + tτ) + Õ(τD + t²τ) = Õ(τ³D + τ⁵).
+
+*Solving.* A system on a nonsingular block drops nothing, so R₀ = R there, and |R| ≤ t. y on B_x is t sums, y on R is t broadcasts, and x on J_x is t broadcasts. So each depth costs Õ(τD + τ³).
+
+*Mates.* The search of Section 4 has at most |S_x| = O(τ²) hubs per bag. Each uses two solves and Õ(t) broadcasts, and each vertex of G_x then knows F_{R,R} and F_{R,s}, so it computes w itself. A neighbour reports over its own edge. By Fact 1, G′_x are vertex disjoint at one depth and their active vertices are not joined, so Lemma 6 holds. Each depth costs Õ(τ³D + τ⁵).
+
+*Certificate.* One solve gives D′ and A′. The components of G − A′ follow from [4, Lemma 8], and one aggregation per component gives its parity, in Õ(τD) rounds.
+
+Summing over O(log n) depths proves the Treewidth Theorem. Probabilities: Fact 2 and Lemma 8 hold on any graph, and (T1), (T2) hold with high probability. Scheduling is randomized, so unlike the planar case we do not claim zero error. Õ(τ³D + τ⁵) also covers the Õ(τ²D + τ³) of (T1). ∎
+
+The width t = O(τ² log n) of (T1) is what costs: a decomposition of width Õ(τ) in the same rounds would give Õ(τ²D + τ³).
+
+## 7. Checks
+
+`sim/gm.py` builds the hierarchy, runs the elimination, the solves, the search and the certificate by message passing bag by bag, and compares against an independent blossom algorithm, an independent rank of the whole matrix, and, for small n, brute-force D(G). `sim/gm.py region` runs on the region bags of [6] and checks the part of (H3) and (H5) that the round count uses. Results are in `sim/REPORT_GENERAL.md`. Negative controls in `sim/gm.py ctl`. `sim/gm.py tw` runs Section 6 on general graphs of low treewidth, with the filter, and `sim/gm.py twctl` is its control.
+
+## 8. Not covered by the checks
 
 - Rounds, messages and who knows what: no CONGEST simulation. Words per bag are counted.
+- For Section 6: `sim/gm.py tw` runs the filter on bags built by the strategy of [4], Section 3, with separators chosen by degree, so neither their size nor their balance is that of [4]. (T1) and (T2) are read from [4], not checked.
 - The proofs of (H1) to (H5) in [6], except that the simulator exercises (H3) and (H5) on its instances.
 - The symmetric case of the Linear Algebra Lemma.
 - Sizes above a few hundred vertices.
 
-## 8. Open
+## 9. Open
 
 - Õ(D) rounds. A dense matrix on a boundary of size D is Θ(D²) words, so a faster bound would need another compression.
 - Maximum weight matching. The algebraic route has polynomials of degree nW in the weight variable, as [5] also remarks.
-- Treewidth τ, without the bipartite restriction. The decomposition and part-wise aggregation of [4] should carry the elimination, with sums per entry. But a bag can have many children, each with retained rows of its own, and (1) fails.
 - Whether Õ(D²) can be made deterministic: the algorithm uses randomness only in the a_e and the z_d.
 
 ## References
