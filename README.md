@@ -1,5 +1,7 @@
 # Exact Maximum Matching in Planar Networks
 
+> **This repository is no longer updated.** Its content continues in the folder [`exact-planar-bipartite-matching`](https://github.com/ssenge/ResearchResults/tree/main/exact-planar-bipartite-matching) of [ResearchResults](https://github.com/ssenge/ResearchResults), where all new results are added. This copy stays as it is.
+
 Distributed algorithms that compute an exact maximum matching of a planar network in a number of rounds that depends on the diameter of the network, and only polylogarithmically on its size.
 
 **Paper:** [`paper/main.pdf`](paper/main.pdf), with its source in [`paper/`](paper/).
